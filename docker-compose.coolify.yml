@@ -1,0 +1,91 @@
+# ============================================================================
+#  BizDirectory — isolated deployment stack for Coolify
+#  SAFE: unique service names + own DB/Redis + own volume + own network.
+#  Does NOT touch whatscamp_app / whatscamp_db / whatscamp_redis /
+#  store_postgres / CodeBlimp. Nothing here binds host ports.
+# ============================================================================
+
+services:
+  bizdir_db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bizdir
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: bizdir
+    volumes:
+      - bizdir_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bizdir -d bizdir']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - bizdir_net
+
+  bizdir_redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'no']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - bizdir_net
+
+  bizdir_api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      API_PORT: 4000
+      DATABASE_URL: postgresql://bizdir:${POSTGRES_PASSWORD}@bizdir_db:5432/bizdir?schema=public
+      REDIS_URL: redis://bizdir_redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      CORS_ORIGINS: ${NEXT_PUBLIC_SITE_URL}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SMS_PROVIDER: ${SMS_PROVIDER:-console}
+      GSTIN_PROVIDER: ${GSTIN_PROVIDER:-mock}
+      PAYMENTS_PROVIDER: ${PAYMENTS_PROVIDER:-mock}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      REVALIDATE_WEBHOOK_URL: http://bizdir_web:3000/api/revalidate
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+    depends_on:
+      bizdir_db:
+        condition: service_healthy
+      bizdir_redis:
+        condition: service_healthy
+    networks:
+      - bizdir_net
+
+  bizdir_web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_WA_COUNTRY_CODE: ${NEXT_PUBLIC_WA_COUNTRY_CODE:-91}
+        NEXT_PUBLIC_IMAGE_HOST: ${NEXT_PUBLIC_IMAGE_HOST:-cdn.example.com}
+    environment:
+      NODE_ENV: production
+      API_INTERNAL_URL: http://bizdir_api:4000/api
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      NEXT_PUBLIC_WA_COUNTRY_CODE: ${NEXT_PUBLIC_WA_COUNTRY_CODE:-91}
+    # Coolify maps your domain to this service on port 3000.
+    expose:
+      - '3000'
+    depends_on:
+      - bizdir_api
+    networks:
+      - bizdir_net
+
+volumes:
+  bizdir_pgdata:
+
+networks:
+  bizdir_net:

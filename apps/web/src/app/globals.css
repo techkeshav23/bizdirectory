@@ -1,0 +1,102 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Fonts (wired via next/font in layout.tsx) */
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  /* Palette — warm editorial trade house */
+  --color-paper: #faf5ec;
+  --color-paper-2: #f2e9d9;
+  --color-ink: #1f1b14;
+  --color-ink-soft: #6b6153;
+  --color-muted: #8a8072;
+  --color-line: #e7dcc7;
+
+  /* Brand = marigold/saffron scale */
+  --color-brand-50: #fdf3e7;
+  --color-brand-100: #f9e2c6;
+  --color-brand-400: #e8832f;
+  --color-brand-500: #d1570e;
+  --color-brand-600: #b4480a;
+  --color-brand-700: #8f3908;
+
+  /* Supporting */
+  --color-forest: #14433a;
+  --color-forest-soft: #1c5a4d;
+  --color-emerald: #0e7c5a;
+
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px rgba(31, 27, 20, 0.04), 0 8px 24px -12px rgba(31, 27, 20, 0.12);
+  --shadow-lift: 0 2px 4px rgba(31, 27, 20, 0.06), 0 18px 40px -16px rgba(31, 27, 20, 0.22);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
+  /* Layered warmth: soft marigold glow + faint grain */
+  background-image:
+    radial-gradient(60rem 40rem at 85% -10%, rgba(209, 87, 14, 0.07), transparent 60%),
+    radial-gradient(50rem 40rem at -10% 10%, rgba(20, 67, 58, 0.06), transparent 55%);
+  background-attachment: fixed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--color-brand-500);
+  color: #fff;
+}
+
+/* Display headings use the serif, tightened */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+}
+
+/* Thin top accent rule used on section headers */
+.rule-accent::before {
+  content: '';
+  display: inline-block;
+  width: 1.75rem;
+  height: 2px;
+  margin-right: 0.6rem;
+  vertical-align: middle;
+  background: var(--color-brand-500);
+}
+
+/* Subtle card grain for atmosphere */
+.grain {
+  position: relative;
+}
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  border-radius: inherit;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-rise {
+  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
