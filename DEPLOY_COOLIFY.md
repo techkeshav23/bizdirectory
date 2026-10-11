@@ -11,6 +11,11 @@ BizDirectory creates **its own** `bizdir_db`, `bizdir_redis`, `bizdir_api`, `biz
 its own volume (`bizdir_pgdata`) and its own network (`bizdir_net`). It binds **no host
 ports** (Coolify's proxy handles the domain), so there is zero port collision risk.
 
+> **This host has NO SSH.** Deploy ONLY through the Coolify dashboard/API at
+> `http://34.100.161.214:8000`. Do not try ssh/scp/docker on the host.
+> `docker-compose.ip.yml` (host-port variant) does NOT apply here — ignore it.
+> Never touch CodeBlimp (`njrp1ianb3fenae70r0p4ela`). Don't bind host ports 80/443/8000.
+
 ## 🔑 Before you start
 1. **Rotate the admin API token** that was shared in chat: Coolify → Settings → API Tokens → delete it. Create a fresh one only if needed.
 2. Prefer a **scoped token** or your own dashboard login over the full-access admin token.
@@ -41,9 +46,11 @@ In the resource's **Environment Variables**, add everything from
 - `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 - Providers stay `console` / `mock` until you wire MSG91 / Surepass / Razorpay.
 
-## 4. Domain
-Point the **`bizdir_web`** service to your new subdomain in Coolify (Domains), port **3000**.
-Add a DNS A-record for the subdomain → `34.100.161.214`.
+## 4. Domain (no domain purchase needed)
+On the **`bizdir_web`** service → Domains → **Generate Domain**. Coolify creates a free
+IP-based URL like `http://<random>.34.100.161.214.sslip.io` (port **3000**). Use that.
+Then set `NEXT_PUBLIC_SITE_URL` (Step 3) to **exactly** that URL and redeploy once.
+(Prefer a real domain later? Add a DNS A-record → `34.100.161.214` and set it here.)
 
 ## 5. Deploy
 Hit **Deploy**. Coolify builds both images and starts the stack. On first boot the API
