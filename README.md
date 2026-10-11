@@ -72,9 +72,11 @@ pnpm dev
 - **Storage**: `STORAGE_PROVIDER=r2` — presign endpoint returns keys; wire R2/S3 creds to enable real uploads.
 - **ISR revalidation**: the API calls `REVALIDATE_WEBHOOK_URL` with `REVALIDATE_SECRET` on business/product changes → Next refreshes the affected ISR pages via cache tags.
 
-## Architecture docs
+## Architecture & deploy docs
 - `PHASE_1_PLAN.md` — full architecture plan (backend, frontend/SEO, infra, delivery roadmap)
 - `TODO_CODING.md` — granular build checklist
+- `DEPLOY_COOLIFY.md` — **complete deploy guide** (Coolify, no-SSH, isolated stack, troubleshooting)
+- `docker-compose.coolify.yml` — the production stack Coolify deploys
 
 ## Status
 ### Phase 1 (MVP) ✅
