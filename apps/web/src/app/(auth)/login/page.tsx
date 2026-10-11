@@ -72,7 +72,7 @@ function LoginForm() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="9876543210"
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           />
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading ? 'Sending…' : 'Send OTP'}
@@ -87,7 +87,7 @@ function LoginForm() {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             placeholder="______"
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 text-center text-lg tracking-[0.5em] outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 text-center text-lg tracking-[0.5em] outline-none focus:border-brand-500"
           />
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading ? 'Verifying…' : 'Verify & continue'}

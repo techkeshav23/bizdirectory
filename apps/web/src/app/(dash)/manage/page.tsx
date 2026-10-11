@@ -1,11 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Store, Phone, MessageCircle, Eye, Plus } from 'lucide-react';
 import { clientApi } from '@/lib/client';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
 import { VerifiedBadge } from '@/components/directory/VerifiedBadge';
-import { UpgradeDialog } from '@/components/billing/UpgradeDialog';
+import {
+  PageHeader,
+  StatCard,
+  StatSkeleton,
+  DataTable,
+  EmptyState,
+  ErrorState,
+  type Column,
+} from '@/components/shared';
 
 interface OwnerBusiness {
   id: string;
@@ -21,117 +31,128 @@ interface OwnerData {
   leads30d: Record<string, number>;
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-emerald-50 text-emerald-700',
-  pending_review: 'bg-amber-50 text-amber-700',
-  draft: 'bg-slate-100 text-slate-600',
-  suspended: 'bg-red-50 text-red-700',
-  rejected: 'bg-red-50 text-red-700',
+const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'destructive' | 'muted'> = {
+  active: 'success',
+  pending_review: 'warning',
+  suspended: 'destructive',
+  rejected: 'destructive',
+  draft: 'muted',
 };
 
 export default function ManagePage() {
   const [data, setData] = useState<OwnerData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  function load() {
-    void clientApi<OwnerData>('GET', '/dashboard/owner')
-      .then(setData)
-      .catch((e) => setError((e as Error).message));
-  }
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      setData(await clientApi<OwnerData>('GET', '/dashboard/owner'));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
-  if (error)
-    return (
-      <div className="rounded-card border border-slate-200 bg-white p-6">
-        <p className="text-muted">Please log in to manage your business.</p>
-        <Button href="/login?next=/manage" className="mt-4">
-          Login
-        </Button>
-      </div>
-    );
-  if (!data) return <p className="text-muted">Loading…</p>;
+  const leads = data?.leads30d ?? {};
+  const totalLeads = Object.values(leads).reduce((a, b) => a + b, 0);
 
-  const totalLeads = Object.values(data.leads30d).reduce((a, b) => a + b, 0);
+  const columns: Column<OwnerBusiness>[] = [
+    {
+      key: 'name',
+      header: 'Business',
+      cell: (b) => (
+        <div className="flex items-center gap-2 font-medium text-foreground">
+          {b.name}
+          <VerifiedBadge status={b.gstinStatus} />
+          {b.subscriptionTier === 'gold' && <Badge variant="warning">Gold</Badge>}
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (b) => (
+        <Badge variant={STATUS_VARIANT[b.status] ?? 'muted'}>{b.status.replace('_', ' ')}</Badge>
+      ),
+    },
+    {
+      key: 'views',
+      header: 'Views',
+      align: 'right',
+      hideOnMobile: true,
+      accessor: (b) => b.viewCount,
+      sortable: true,
+      cell: (b) => <span className="tabular-nums text-muted-foreground">{b.viewCount}</span>,
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      cell: (b) => (
+        <div className="flex justify-end gap-3 text-sm">
+          <Link href={`/manage/${b.id}`} className="font-medium text-primary hover:underline">
+            Manage
+          </Link>
+          {b.status === 'active' && (
+            <Link href={`/business/${b.slug}`} className="text-muted-foreground hover:text-foreground">
+              View
+            </Link>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-3xl font-semibold tracking-tight text-ink">
-          Your businesses
-        </h1>
-        <Button href="/register">+ Add business</Button>
-      </div>
+    <div className="animate-rise">
+      <PageHeader
+        icon={Store}
+        title="Your businesses"
+        description="Manage your listings, products and leads."
+        actions={
+          <Button href="/register">
+            <Plus /> Add business
+          </Button>
+        }
+      />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Stat label="Businesses" value={data.businesses.length} />
-        <Stat label="Leads (30d)" value={totalLeads} />
-        <Stat label="Calls" value={data.leads30d.call ?? 0} />
-        <Stat label="WhatsApp" value={data.leads30d.whatsapp ?? 0} />
-      </div>
+      {loading && !data ? (
+        <StatSkeleton />
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <StatCard label="Businesses" value={data?.businesses.length ?? 0} icon={Store} />
+          <StatCard label="Leads (30d)" value={totalLeads} icon={MessageCircle} />
+          <StatCard label="Calls" value={leads.call ?? 0} icon={Phone} />
+          <StatCard label="WhatsApp" value={leads.whatsapp ?? 0} icon={MessageCircle} />
+        </div>
+      )}
 
-      <div className="space-y-3">
-        {data.businesses.map((b) => (
-          <div key={b.id} className="rounded-card border border-slate-200 bg-white p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{b.name}</h3>
-                  <VerifiedBadge status={b.gstinStatus} />
-                  {b.subscriptionTier === 'gold' && (
-                    <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                      GOLD
-                    </span>
-                  )}
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-sm text-muted">
-                  <span
-                    className={`rounded px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[b.status] ?? ''}`}
-                  >
-                    {b.status.replace('_', ' ')}
-                  </span>
-                  <span>{b.viewCount} views</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Link
-                  href={`/manage/${b.id}`}
-                  className="text-sm font-medium text-brand-600 hover:underline"
-                >
-                  Manage →
-                </Link>
-                {b.status === 'active' && (
-                  <Link href={`/business/${b.slug}`} className="text-sm text-muted hover:text-ink">
-                    View
-                  </Link>
-                )}
-              </div>
-            </div>
-            <UpgradeDialog
-              businessId={b.id}
-              businessName={b.name}
-              currentTier={b.subscriptionTier}
-              onDone={load}
-            />
-          </div>
-        ))}
-        {data.businesses.length === 0 && (
-          <div className="rounded-card border border-dashed border-slate-300 bg-white p-10 text-center text-muted">
-            You haven&apos;t added a business yet.
-          </div>
+      <div className="mt-8">
+        {error ? (
+          <ErrorState description={error} onRetry={load} />
+        ) : !loading && data && data.businesses.length === 0 ? (
+          <EmptyState
+            icon={Store}
+            title="No businesses yet"
+            description="List your first business to start receiving customer enquiries."
+            action={<Button href="/register">List a business</Button>}
+          />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={data?.businesses ?? []}
+            isLoading={loading}
+            getRowKey={(b) => b.id}
+          />
         )}
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-card border border-slate-200 bg-white p-4">
-      <div className="text-2xl font-bold text-brand-600">{value}</div>
-      <div className="text-sm text-muted">{label}</div>
     </div>
   );
 }

@@ -19,7 +19,7 @@ export function SearchBar({ big = false }: { big?: boolean }) {
   return (
     <form
       onSubmit={submit}
-      className={`flex w-full items-center overflow-hidden rounded-full border border-line bg-white transition-shadow focus-within:border-brand-400 ${
+      className={`flex w-full items-center overflow-hidden rounded-full border border-line bg-card transition-shadow focus-within:border-brand-400 ${
         big ? 'shadow-[var(--shadow-lift)] focus-within:shadow-[var(--shadow-lift)]' : 'shadow-sm'
       }`}
     >

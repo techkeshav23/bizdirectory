@@ -40,7 +40,7 @@ export function ReviewForm({ businessId }: { businessId: string }) {
             key={n}
             type="button"
             onClick={() => setRating(n)}
-            className={`text-2xl ${n <= rating ? 'text-amber-500' : 'text-slate-300'}`}
+            className={`text-2xl ${n <= rating ? 'text-primary' : 'text-muted-foreground/40'}`}
             aria-label={`${n} star`}
           >
             ★
@@ -51,7 +51,7 @@ export function ReviewForm({ businessId }: { businessId: string }) {
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="Share your experience (optional)"
-        className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+        className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring"
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <Button type="submit" size="sm" disabled={busy}>

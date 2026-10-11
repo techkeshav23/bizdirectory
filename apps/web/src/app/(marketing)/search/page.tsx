@@ -1,7 +1,11 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { apiGet } from '@/lib/api';
 import type { SearchResponse } from '@/lib/types';
 import { BusinessCard } from '@/components/directory/BusinessCard';
+import { FilterBar } from '@/components/directory/FilterBar';
+import { EmptyState } from '@/components/shared';
+import { SearchX } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,20 +32,25 @@ export default async function SearchPage({
 
   return (
     <div className="animate-rise">
-      <div className="text-xs font-semibold uppercase tracking-widest text-brand-500">Search</div>
-      <h1 className="mt-1.5 font-display text-3xl font-semibold tracking-tight text-ink">
+      <div className="text-xs font-semibold uppercase tracking-widest text-primary">Search</div>
+      <h1 className="mt-1.5 font-display text-3xl font-semibold tracking-tight text-foreground">
         {sp.q ? `“${sp.q}”` : 'All businesses'}
       </h1>
-      <p className="mb-7 mt-1 text-ink-soft">
+      <p className="mb-6 mt-1 text-muted-foreground">
         {data.items.length} business{data.items.length === 1 ? '' : 'es'} found
         {sp.city ? ` in ${sp.city}` : ''}
       </p>
 
+      <Suspense fallback={null}>
+        <FilterBar />
+      </Suspense>
+
       {data.items.length === 0 ? (
-        <div className="rounded-card border border-dashed border-line bg-white p-14 text-center">
-          <div className="font-display text-2xl text-ink">Nothing here yet</div>
-          <p className="mt-2 text-muted">Try a different keyword or city.</p>
-        </div>
+        <EmptyState
+          icon={SearchX}
+          title="Nothing here yet"
+          description="Try a different keyword, city, or clear your filters."
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {data.items.map((b) => (

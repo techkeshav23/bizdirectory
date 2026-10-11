@@ -95,7 +95,7 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
       />
 
       {/* Hero card with cover */}
-      <div className="overflow-hidden rounded-card border border-line bg-white shadow-[var(--shadow-card)]">
+      <div className="overflow-hidden rounded-card border border-line bg-card shadow-[var(--shadow-card)]">
         <div
           className="grain h-36 w-full bg-forest sm:h-44"
           style={
@@ -144,7 +144,7 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
       </div>
 
       {business.description && (
-        <section className="mt-6 rounded-card border border-line bg-white p-6 shadow-[var(--shadow-card)] sm:p-8">
+        <section className="mt-6 rounded-card border border-line bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
           <h2 className="rule-accent font-display text-xl font-semibold text-ink">About</h2>
           <p className="mt-3 whitespace-pre-line leading-relaxed text-ink-soft">
             {business.description}
@@ -164,7 +164,7 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
             {business.products.map((p) => (
               <div
                 key={p.id}
-                className="group overflow-hidden rounded-card border border-line bg-white shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
+                className="group overflow-hidden rounded-card border border-line bg-card shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
               >
                 <div className="flex h-40 items-center justify-center overflow-hidden bg-paper-2">
                   {p.images[0] ? (
@@ -193,7 +193,7 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
         </section>
       )}
 
-      <section className="mt-6 grid gap-8 rounded-card border border-line bg-white p-6 shadow-[var(--shadow-card)] sm:p-8 md:grid-cols-2">
+      <section className="mt-6 grid gap-8 rounded-card border border-line bg-card p-6 shadow-[var(--shadow-card)] sm:p-8 md:grid-cols-2">
         <div>
           <h2 className="rule-accent mb-4 font-display text-xl font-semibold text-ink">
             Reviews {business.ratingCount > 0 ? `(${business.ratingCount})` : ''}

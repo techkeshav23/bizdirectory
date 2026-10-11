@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Fraunces, Hanken_Grotesk } from 'next/font/google';
 import { publicEnv } from '@/env';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
 const hanken = Hanken_Grotesk({
@@ -33,8 +35,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${hanken.variable} ${fraunces.variable}`}>
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning className={`${hanken.variable} ${fraunces.variable}`}>
+      <body>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

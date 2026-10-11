@@ -53,7 +53,7 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
           <Link
             key={c.id}
             href={`/category/${c.slug}/${city}`}
-            className="rounded-full border border-line bg-white px-3.5 py-1.5 text-sm text-ink-soft transition-colors hover:border-brand-400 hover:text-brand-600"
+            className="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-ink-soft transition-colors hover:border-brand-400 hover:text-brand-600"
           >
             {c.name}
           </Link>

@@ -67,7 +67,7 @@ export default async function CategoryCityPage({
         ))}
       </div>
       {data.items.length === 0 && (
-        <div className="rounded-card border border-dashed border-line bg-white p-14 text-center">
+        <div className="rounded-card border border-dashed border-line bg-card p-14 text-center">
           <div className="font-display text-2xl text-ink">
             No {cat} in {cityName} yet
           </div>

@@ -1,8 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Building2,
+  Clock,
+  Package,
+  Users as UsersIcon,
+  MessageSquare,
+  ShieldCheck,
+} from 'lucide-react';
 import { clientApi } from '@/lib/client';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VerifiedBadge } from '@/components/directory/VerifiedBadge';
+import {
+  PageHeader,
+  StatCard,
+  StatSkeleton,
+  DataTable,
+  ConfirmDialog,
+  ErrorState,
+  type Column,
+} from '@/components/shared';
+import { toast } from '@/components/ui/sonner';
 
 interface AdminBusiness {
   id: string;
@@ -21,132 +42,174 @@ interface Stats {
   contactEvents: number;
 }
 
+const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'destructive' | 'muted'> = {
+  active: 'success',
+  pending_review: 'warning',
+  suspended: 'destructive',
+  rejected: 'destructive',
+  draft: 'muted',
+};
+
 export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [list, setList] = useState<AdminBusiness[]>([]);
   const [filter, setFilter] = useState('pending_review');
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState('');
+  const [reject, setReject] = useState<AdminBusiness | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  async function load() {
-    setStats(await clientApi<Stats>('GET', '/admin/stats'));
-    setList(await clientApi<AdminBusiness[]>('GET', `/admin/businesses?status=${filter}`));
-  }
-
-  useEffect(() => {
-    load().catch((e) => setError((e as Error).message));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
-
-  async function moderate(id: string, status: string) {
-    setBusy(id);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
     try {
-      await clientApi('PATCH', `/admin/businesses/${id}/status`, { status });
-      await load();
+      const [s, l] = await Promise.all([
+        clientApi<Stats>('GET', '/admin/stats'),
+        clientApi<AdminBusiness[]>('GET', `/admin/businesses?status=${filter}`),
+      ]);
+      setStats(s);
+      setList(l);
     } catch (e) {
       setError((e as Error).message);
     } finally {
-      setBusy('');
+      setLoading(false);
+    }
+  }, [filter]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function moderate(id: string, status: string, name: string) {
+    setBusy(true);
+    try {
+      await clientApi('PATCH', `/admin/businesses/${id}/status`, { status });
+      toast.success(`"${name}" ${status === 'active' ? 'approved' : status}`);
+      setReject(null);
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
     }
   }
 
-  if (error)
-    return (
-      <div className="rounded-card border border-slate-200 bg-white p-6">
-        <p className="text-muted">Admin access required.</p>
-        <Button href="/login?next=/admin" className="mt-4">
-          Admin login
-        </Button>
-      </div>
-    );
+  const columns: Column<AdminBusiness>[] = [
+    {
+      key: 'name',
+      header: 'Business',
+      cell: (b) => (
+        <div>
+          <div className="flex items-center gap-2 font-medium text-foreground">
+            {b.name}
+            <VerifiedBadge status={b.gstinStatus} />
+          </div>
+          <div className="text-xs text-muted-foreground">{b.owner.phone}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'category',
+      header: 'Category',
+      hideOnMobile: true,
+      cell: (b) => <span className="text-muted-foreground">{b.primaryCategory.name}</span>,
+    },
+    {
+      key: 'location',
+      header: 'City',
+      hideOnMobile: true,
+      cell: (b) => <span className="text-muted-foreground">{b.location.name}</span>,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (b) => (
+        <Badge variant={STATUS_VARIANT[b.status] ?? 'muted'}>{b.status.replace('_', ' ')}</Badge>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      cell: (b) => (
+        <div className="flex justify-end gap-1.5">
+          {b.status !== 'active' && (
+            <Button size="sm" disabled={busy} onClick={() => moderate(b.id, 'active', b.name)}>
+              Approve
+            </Button>
+          )}
+          {b.status !== 'suspended' && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              onClick={() => moderate(b.id, 'suspended', b.name)}
+            >
+              Suspend
+            </Button>
+          )}
+          {b.status !== 'rejected' && (
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => setReject(b)}>
+              Reject
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <h1 className="mb-6 font-display text-3xl font-semibold tracking-tight text-ink">
-        Admin panel
-      </h1>
+    <div className="animate-rise">
+      <PageHeader
+        icon={ShieldCheck}
+        title="Admin"
+        description="Moderate listings and manage the platform."
+      />
 
-      {stats && (
-        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
-          <Stat label="Businesses" value={stats.businesses} />
-          <Stat label="Pending" value={stats.pending} />
-          <Stat label="Products" value={stats.products} />
-          <Stat label="Users" value={stats.users} />
-          <Stat label="Leads" value={stats.contactEvents} />
+      {loading && !stats ? (
+        <StatSkeleton count={5} />
+      ) : stats ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <StatCard label="Businesses" value={stats.businesses} icon={Building2} />
+          <StatCard label="Pending" value={stats.pending} icon={Clock} />
+          <StatCard label="Products" value={stats.products} icon={Package} />
+          <StatCard label="Users" value={stats.users} icon={UsersIcon} />
+          <StatCard label="Leads" value={stats.contactEvents} icon={MessageSquare} />
         </div>
-      )}
+      ) : null}
 
-      <div className="mb-4 flex gap-2">
-        {['pending_review', 'active', 'suspended'].map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`rounded-lg px-3 py-1.5 text-sm ${
-              filter === s ? 'bg-brand-500 text-white' : 'bg-white text-muted border border-slate-200'
-            }`}
-          >
-            {s.replace('_', ' ')}
-          </button>
-        ))}
-      </div>
+      <div className="mt-8">
+        <Tabs value={filter} onValueChange={setFilter} className="mb-4">
+          <TabsList>
+            <TabsTrigger value="pending_review">Pending</TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="suspended">Suspended</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
-      <div className="space-y-3">
-        {list.map((b) => (
-          <div
-            key={b.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-slate-200 bg-white p-4"
-          >
-            <div>
-              <h3 className="font-semibold">{b.name}</h3>
-              <p className="text-sm text-muted">
-                {b.primaryCategory.name} · {b.location.name} · {b.owner.phone} · GSTIN:{' '}
-                {b.gstinStatus}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {b.status !== 'active' && (
-                <Button size="sm" disabled={busy === b.id} onClick={() => moderate(b.id, 'active')}>
-                  Approve
-                </Button>
-              )}
-              {b.status !== 'suspended' && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy === b.id}
-                  onClick={() => moderate(b.id, 'suspended')}
-                >
-                  Suspend
-                </Button>
-              )}
-              {b.status !== 'rejected' && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={busy === b.id}
-                  onClick={() => moderate(b.id, 'rejected')}
-                >
-                  Reject
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
-        {list.length === 0 && (
-          <p className="rounded-card border border-dashed border-slate-300 bg-white p-10 text-center text-muted">
-            Nothing here.
-          </p>
+        {error ? (
+          <ErrorState description={error} onRetry={load} />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={list}
+            isLoading={loading}
+            getRowKey={(b) => b.id}
+            empty={<span className="text-muted-foreground">Nothing in this queue.</span>}
+          />
         )}
       </div>
-    </div>
-  );
-}
 
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-card border border-slate-200 bg-white p-4">
-      <div className="text-2xl font-bold text-brand-600">{value}</div>
-      <div className="text-sm text-muted">{label}</div>
+      <ConfirmDialog
+        open={!!reject}
+        onOpenChange={(o) => !o && setReject(null)}
+        title={`Reject "${reject?.name ?? ''}"?`}
+        description="The business owner will need to resubmit. You can approve it later."
+        confirmLabel="Reject"
+        variant="destructive"
+        isSubmitting={busy}
+        onConfirm={() => reject && moderate(reject.id, 'rejected', reject.name)}
+      />
     </div>
   );
 }

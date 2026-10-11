@@ -46,7 +46,7 @@ export default async function PricingPage() {
               className={`grain relative overflow-hidden rounded-card p-7 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-1 ${
                 highlight
                   ? 'bg-forest text-paper md:-mt-4 md:pb-12'
-                  : 'border border-line bg-white'
+                  : 'border border-line bg-card'
               }`}
             >
               {highlight && (

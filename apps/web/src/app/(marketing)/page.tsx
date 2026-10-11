@@ -32,7 +32,7 @@ export default async function HomePage() {
       />
 
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-[1.75rem] border border-line bg-white px-6 py-16 shadow-[var(--shadow-card)] sm:px-12 sm:py-20">
+      <section className="relative overflow-hidden rounded-[1.75rem] border border-line bg-card px-6 py-16 shadow-[var(--shadow-card)] sm:px-12 sm:py-20">
         <div
           className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full opacity-70 blur-3xl"
           style={{ background: 'radial-gradient(circle, rgba(232,131,47,0.22), transparent 70%)' }}
@@ -85,7 +85,7 @@ export default async function HomePage() {
             <Link
               key={c.id}
               href={`/category/${c.slug}`}
-              className="group grain relative overflow-hidden rounded-card border border-line bg-white p-5 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/60 hover:shadow-[var(--shadow-lift)]"
+              className="group grain relative overflow-hidden rounded-card border border-line bg-card p-5 shadow-[var(--shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:border-brand-400/60 hover:shadow-[var(--shadow-lift)]"
             >
               <div className="mb-8 font-display text-3xl text-brand-500/30 transition-colors group-hover:text-brand-500">
                 {String(i + 1).padStart(2, '0')}
@@ -107,7 +107,7 @@ export default async function HomePage() {
             <Link
               key={c.id}
               href={`/location/${c.slug}`}
-              className="rounded-full border border-line bg-white px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:text-brand-600"
+              className="rounded-full border border-line bg-card px-5 py-2.5 text-sm font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:text-brand-600"
             >
               {c.name}
             </Link>

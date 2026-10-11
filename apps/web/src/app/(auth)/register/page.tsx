@@ -77,7 +77,7 @@ export default function RegisterPage() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Your mobile number"
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           />
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             Send OTP
@@ -103,7 +103,7 @@ export default function RegisterPage() {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             placeholder="6-digit OTP"
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 text-center tracking-widest outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 text-center tracking-widest outline-none focus:border-brand-500"
           />
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             Verify
@@ -135,19 +135,19 @@ export default function RegisterPage() {
             placeholder="Business name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           />
           <textarea
             placeholder="Short description"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-brand-500"
+            className="min-h-20 w-full rounded-lg border border-input px-3 py-2 outline-none focus:border-brand-500"
           />
           <select
             required
             value={form.primaryCategoryId}
             onChange={(e) => setForm({ ...form, primaryCategoryId: e.target.value })}
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           >
             <option value="">Select category</option>
             {categories.filter((c) => !c.parentId).map((c) => (
@@ -160,7 +160,7 @@ export default function RegisterPage() {
             required
             value={form.locationId}
             onChange={(e) => setForm({ ...form, locationId: e.target.value })}
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           >
             <option value="">Select city</option>
             {cities.map((c) => (
@@ -173,7 +173,7 @@ export default function RegisterPage() {
             placeholder="WhatsApp number (optional)"
             value={form.whatsappNumber}
             onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           />
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             Create &amp; continue
@@ -191,7 +191,7 @@ export default function RegisterPage() {
             value={gstin}
             maxLength={15}
             onChange={(e) => setGstin(e.target.value.toUpperCase())}
-            className="h-11 w-full rounded-lg border border-slate-300 px-3 uppercase outline-none focus:border-brand-500"
+            className="h-11 w-full rounded-lg border border-input px-3 uppercase outline-none focus:border-brand-500"
           />
           {legalName && (
             <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">

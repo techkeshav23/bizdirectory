@@ -49,7 +49,7 @@ export default async function CategoryPage({
         ))}
       </div>
       {data.items.length === 0 && (
-        <div className="rounded-card border border-dashed border-line bg-white p-14 text-center">
+        <div className="rounded-card border border-dashed border-line bg-card p-14 text-center">
           <div className="font-display text-2xl text-ink">No businesses yet</div>
           <p className="mt-2 text-muted">Check back soon — or list yours.</p>
         </div>

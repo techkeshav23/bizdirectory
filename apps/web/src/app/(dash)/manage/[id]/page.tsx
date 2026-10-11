@@ -1,9 +1,18 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
-import Link from 'next/link';
+import { use, useCallback, useEffect, useState } from 'react';
+import { Store, Trash2, Plus, Send } from 'lucide-react';
 import { clientApi } from '@/lib/client';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader, ErrorState, DeleteConfirmDialog, CardSkeleton } from '@/components/shared';
+import { toast } from '@/components/ui/sonner';
+import { UpgradeDialog } from '@/components/billing/UpgradeDialog';
 import { inr } from '@/lib/utils';
 
 interface ProductItem {
@@ -21,6 +30,7 @@ interface BusinessDetail {
   whatsappNumber: string | null;
   address: string | null;
   status: string;
+  subscriptionTier?: string | null;
   products: ProductItem[];
 }
 
@@ -28,54 +38,81 @@ export default function ManageBusinessPage({ params }: { params: Promise<{ id: s
   const { id } = use(params);
   const [biz, setBiz] = useState<BusinessDetail | null>(null);
   const [error, setError] = useState('');
-  const [msg, setMsg] = useState('');
 
-  function load() {
-    void clientApi<BusinessDetail>('GET', `/businesses/manage/${id}`)
+  const load = useCallback(() => {
+    setError('');
+    clientApi<BusinessDetail>('GET', `/businesses/manage/${id}`)
       .then(setBiz)
       .catch((e) => setError((e as Error).message));
-  }
-  useEffect(load, [id]);
+  }, [id]);
 
-  if (error)
-    return (
-      <div className="rounded-card border border-slate-200 bg-white p-6">
-        <p className="text-muted">{error}</p>
-        <Button href="/login?next=/manage" className="mt-4">
-          Login
-        </Button>
-      </div>
-    );
-  if (!biz) return <p className="text-muted">Loading…</p>;
+  useEffect(load, [load]);
+
+  if (error) return <ErrorState description={error} onRetry={load} />;
+  if (!biz) return <CardSkeleton />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/manage" className="text-sm text-muted hover:text-ink">
-            ← All businesses
-          </Link>
-          <h1 className="text-2xl font-bold">{biz.name}</h1>
-        </div>
-        {biz.status === 'draft' && (
-          <Button
-            onClick={() =>
-              void clientApi('POST', `/businesses/${biz.id}/submit`)
-                .then(() => {
-                  setMsg('Submitted for review!');
-                  load();
-                })
-                .catch((e) => setError((e as Error).message))
-            }
-          >
-            Submit for review
-          </Button>
-        )}
-      </div>
-      {msg && <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{msg}</div>}
+    <div className="animate-rise">
+      <PageHeader
+        icon={Store}
+        title={biz.name}
+        backLink={{ href: '/manage', label: 'All businesses' }}
+        actions={
+          biz.status === 'draft' ? (
+            <Button
+              onClick={() =>
+                clientApi('POST', `/businesses/${biz.id}/submit`)
+                  .then(() => {
+                    toast.success('Submitted for review');
+                    load();
+                  })
+                  .catch((e) => toast.error((e as Error).message))
+              }
+            >
+              <Send /> Submit for review
+            </Button>
+          ) : (
+            <Badge
+              variant={biz.status === 'active' ? 'success' : 'warning'}
+            >
+              {biz.status.replace('_', ' ')}
+            </Badge>
+          )
+        }
+      />
 
-      <ProfileEditor biz={biz} onSaved={() => { setMsg('Profile saved — public page is refreshing.'); load(); }} />
-      <ProductManager biz={biz} onChange={load} />
+      <Tabs defaultValue="profile">
+        <TabsList>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="products">Products ({biz.products.length})</TabsTrigger>
+          <TabsTrigger value="plan">Plan</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile">
+          <ProfileEditor biz={biz} onSaved={load} />
+        </TabsContent>
+        <TabsContent value="products">
+          <ProductManager biz={biz} onChange={load} />
+        </TabsContent>
+        <TabsContent value="plan">
+          <Card>
+            <CardHeader>
+              <CardTitle>Subscription</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Current plan: <span className="font-medium text-foreground">{biz.subscriptionTier ?? 'free'}</span>
+              </p>
+              <UpgradeDialog
+                businessId={biz.id}
+                businessName={biz.name}
+                currentTier={biz.subscriptionTier}
+                onDone={load}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -88,69 +125,72 @@ function ProfileEditor({ biz, onSaved }: { biz: BusinessDetail; onSaved: () => v
     address: biz.address ?? '',
   });
   const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState('');
 
   return (
-    <section className="rounded-card border border-slate-200 bg-white p-5">
-      <h2 className="mb-3 font-semibold">Business profile</h2>
-      {err && <div className="mb-2 text-sm text-red-600">{err}</div>}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <input
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          placeholder="Business name"
-          className="h-10 rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
-        />
-        <input
-          value={form.whatsappNumber}
-          onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
-          placeholder="WhatsApp number"
-          className="h-10 rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500"
-        />
-        <input
-          value={form.address}
-          onChange={(e) => setForm({ ...form, address: e.target.value })}
-          placeholder="Address"
-          className="h-10 rounded-lg border border-slate-300 px-3 outline-none focus:border-brand-500 sm:col-span-2"
-        />
-        <textarea
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          placeholder="Description"
-          className="min-h-24 rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-brand-500 sm:col-span-2"
-        />
-      </div>
-      <Button
-        className="mt-3"
-        disabled={saving}
-        onClick={() => {
-          setSaving(true);
-          setErr('');
-          void clientApi('PATCH', `/businesses/${biz.id}`, {
-            name: form.name,
-            description: form.description || undefined,
-            whatsappNumber: form.whatsappNumber || undefined,
-            address: form.address || undefined,
-          })
-            .then(onSaved)
-            .catch((e) => setErr((e as Error).message))
-            .finally(() => setSaving(false));
-        }}
-      >
-        {saving ? 'Saving…' : 'Save profile'}
-      </Button>
-    </section>
+    <Card>
+      <CardHeader>
+        <CardTitle>Business profile</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label>Business name</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>WhatsApp number</Label>
+            <Input
+              value={form.whatsappNumber}
+              onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>Address</Label>
+            <Input
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>Description</Label>
+            <Textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
+        <Button
+          disabled={saving}
+          onClick={() => {
+            setSaving(true);
+            clientApi('PATCH', `/businesses/${biz.id}`, {
+              name: form.name,
+              description: form.description || undefined,
+              whatsappNumber: form.whatsappNumber || undefined,
+              address: form.address || undefined,
+            })
+              .then(() => {
+                toast.success('Profile saved — public page is refreshing');
+                onSaved();
+              })
+              .catch((e) => toast.error((e as Error).message))
+              .finally(() => setSaving(false));
+          }}
+        >
+          {saving ? 'Saving…' : 'Save profile'}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
 function ProductManager({ biz, onChange }: { biz: BusinessDetail; onChange: () => void }) {
   const [form, setForm] = useState({ name: '', price: '', priceUnit: '', imageUrl: '' });
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
+  const [del, setDel] = useState<ProductItem | null>(null);
 
   async function add() {
     setBusy(true);
-    setErr('');
     try {
       await clientApi('POST', '/products', {
         businessId: biz.id,
@@ -160,86 +200,107 @@ function ProductManager({ biz, onChange }: { biz: BusinessDetail; onChange: () =
         imageUrls: form.imageUrl ? [form.imageUrl] : undefined,
       });
       setForm({ name: '', price: '', priceUnit: '', imageUrl: '' });
+      toast.success('Product added');
       onChange();
     } catch (e) {
-      setErr((e as Error).message);
+      toast.error((e as Error).message);
     } finally {
       setBusy(false);
     }
   }
 
-  async function remove(id: string) {
-    await clientApi('DELETE', `/products/${id}`).then(onChange).catch((e) => setErr((e as Error).message));
+  async function remove(p: ProductItem) {
+    setBusy(true);
+    try {
+      await clientApi('DELETE', `/products/${p.id}`);
+      toast.success('Product deleted');
+      setDel(null);
+      onChange();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <section className="rounded-card border border-slate-200 bg-white p-5">
-      <h2 className="mb-3 font-semibold">Products &amp; services ({biz.products.length})</h2>
-      {err && <div className="mb-2 text-sm text-red-600">{err}</div>}
-
-      <div className="mb-4 space-y-3">
-        {biz.products.map((p) => (
-          <div
-            key={p.id}
-            className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 overflow-hidden rounded bg-slate-100">
-                {p.images[0] && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.images[0].url} alt={p.name} className="h-full w-full object-cover" />
-                )}
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Products &amp; services</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {biz.products.length === 0 && <p className="text-sm text-muted-foreground">No products yet.</p>}
+          {biz.products.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-12 overflow-hidden rounded-lg bg-muted">
+                  {p.images[0] && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.images[0].url} alt={p.name} className="size-full object-cover" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-medium text-foreground">{p.name}</div>
+                  {p.price !== null && (
+                    <div className="text-sm text-muted-foreground">
+                      {inr(p.price)}
+                      {p.priceUnit ? ` / ${p.priceUnit}` : ''}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <div className="font-medium">{p.name}</div>
-                {p.price !== null && (
-                  <div className="text-sm text-muted">
-                    {inr(p.price)}
-                    {p.priceUnit ? ` / ${p.priceUnit}` : ''}
-                  </div>
-                )}
-              </div>
+              <Button size="icon" variant="ghost" onClick={() => setDel(p)} aria-label="Delete product">
+                <Trash2 className="text-destructive" />
+              </Button>
             </div>
-            <button onClick={() => remove(p.id)} className="text-sm text-red-600 hover:underline">
-              Delete
-            </button>
-          </div>
-        ))}
-        {biz.products.length === 0 && <p className="text-sm text-muted">No products yet.</p>}
-      </div>
+          ))}
+        </CardContent>
+      </Card>
 
-      <div className="rounded-lg bg-slate-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold">Add a product</h3>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Product name"
-            className="h-9 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-          />
-          <input
-            value={form.imageUrl}
-            onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-            placeholder="Image URL (optional)"
-            className="h-9 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-          />
-          <input
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value.replace(/[^0-9.]/g, '') })}
-            placeholder="Price (₹)"
-            className="h-9 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-          />
-          <input
-            value={form.priceUnit}
-            onChange={(e) => setForm({ ...form, priceUnit: e.target.value })}
-            placeholder="Unit (kg, piece…)"
-            className="h-9 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
-          />
-        </div>
-        <Button size="sm" className="mt-2" disabled={busy || !form.name} onClick={add}>
-          {busy ? 'Adding…' : '+ Add product'}
-        </Button>
-      </div>
-    </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Add a product</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input
+              placeholder="Product name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+            <Input
+              placeholder="Image URL (optional)"
+              value={form.imageUrl}
+              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+            />
+            <Input
+              placeholder="Price (₹)"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value.replace(/[^0-9.]/g, '') })}
+            />
+            <Input
+              placeholder="Unit (kg, piece…)"
+              value={form.priceUnit}
+              onChange={(e) => setForm({ ...form, priceUnit: e.target.value })}
+            />
+          </div>
+          <Button className="mt-3" disabled={busy || !form.name} onClick={add}>
+            <Plus /> Add product
+          </Button>
+        </CardContent>
+      </Card>
+
+      <DeleteConfirmDialog
+        open={!!del}
+        onOpenChange={(o) => !o && setDel(null)}
+        itemName={del?.name ?? ''}
+        isSubmitting={busy}
+        onConfirm={() => del && remove(del)}
+      />
+    </div>
   );
 }

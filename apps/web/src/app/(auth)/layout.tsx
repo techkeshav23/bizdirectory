@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <Link href="/" className="mb-7 font-display text-3xl font-semibold tracking-tight text-ink">
         Biz<span className="italic text-brand-500">Directory</span>
       </Link>
-      <div className="grain w-full max-w-md rounded-card border border-line bg-white p-7 shadow-[var(--shadow-lift)]">
+      <div className="grain w-full max-w-md rounded-card border border-line bg-card p-7 shadow-[var(--shadow-lift)]">
         {children}
       </div>
       <Link href="/" className="mt-6 text-sm text-muted hover:text-ink">

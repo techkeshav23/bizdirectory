@@ -125,7 +125,7 @@ export function UpgradeDialog({ businessId, businessName, currentTier, onDone }:
   }
 
   return (
-    <div className="mt-3 w-full rounded-lg border border-slate-200 bg-slate-50 p-3">
+    <div className="mt-3 w-full rounded-lg border border-border bg-muted p-3">
       {msg && <div className="mb-2 text-sm text-brand-600">{msg}</div>}
       <div className="flex flex-col gap-2">
         {PLANS.map((p) => (
