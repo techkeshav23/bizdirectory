@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { MapPin, Search } from 'lucide-react';
 
 export function SearchBar({ big = false }: { big?: boolean }) {
   const router = useRouter();
@@ -16,34 +17,40 @@ export function SearchBar({ big = false }: { big?: boolean }) {
     router.push(`/search?${params.toString()}`);
   }
 
+  const h = big ? 'h-14' : 'h-11';
+
   return (
     <form
       onSubmit={submit}
-      className={`flex w-full items-center overflow-hidden rounded-full border border-line bg-card transition-shadow focus-within:border-brand-400 ${
-        big ? 'shadow-[var(--shadow-lift)] focus-within:shadow-[var(--shadow-lift)]' : 'shadow-sm'
+      className={`flex w-full items-center overflow-hidden rounded-[var(--radius)] border border-input bg-card transition-colors focus-within:border-primary ${
+        big ? 'shadow-[var(--shadow-card)]' : ''
       }`}
     >
-      <span className={`pl-5 text-ink-soft ${big ? 'text-lg' : 'text-base'}`} aria-hidden>
-        ⌕
-      </span>
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="What are you looking for?"
-        className={`min-w-0 flex-1 bg-transparent px-3 outline-none placeholder:text-muted ${big ? 'h-16 text-base' : 'h-12 text-sm'}`}
-      />
-      <span className="h-6 w-px bg-line" aria-hidden />
-      <input
-        value={city}
-        onChange={(e) => setCity(e.target.value)}
-        placeholder="City"
-        className={`w-24 bg-transparent px-4 outline-none placeholder:text-muted ${big ? 'h-16 text-base' : 'h-12 text-sm'}`}
-      />
+      <div className={`flex min-w-0 flex-[2] items-center gap-2 pl-3.5 ${h}`}>
+        <Search className="size-4 shrink-0 text-muted-foreground" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="What are you looking for?"
+          className={`min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground ${big ? 'text-base' : 'text-sm'}`}
+        />
+      </div>
+      <span className="h-6 w-px bg-border" aria-hidden />
+      <div className={`flex min-w-0 flex-1 items-center gap-2 pl-3 ${h}`}>
+        <MapPin className="size-4 shrink-0 text-muted-foreground" />
+        <input
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="City"
+          className={`min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground ${big ? 'text-base' : 'text-sm'}`}
+        />
+      </div>
       <button
         type="submit"
-        className={`m-1.5 rounded-full bg-brand-500 px-6 font-medium text-white transition-colors hover:bg-brand-600 ${big ? 'h-[3.25rem] text-base' : 'h-9 text-sm'}`}
+        className={`m-1 flex shrink-0 items-center gap-1.5 rounded-[calc(var(--radius)-2px)] bg-primary px-5 font-medium text-primary-foreground transition-colors hover:brightness-110 ${big ? 'h-12 text-base' : 'h-9 text-sm'}`}
       >
-        Search
+        <Search className="size-4" />
+        <span className="hidden sm:inline">Search</span>
       </button>
     </form>
   );

@@ -4,100 +4,117 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   Semantic token layer (shadcn-v4 convention: full hsl() colors)
-   Light = warm paper/ink identity. Dark = warm espresso.
+   Brand: olive/sage premium B2B marketplace (client spec)
+   Full hsl() colors live here; @theme maps --color-*: var(--*).
+   Contrast-checked: olive(primary) + success(green) carry white;
+   sage lives as a tint/accent, never white-on-sage body text.
    ============================================================ */
 :root {
-  --background: hsl(40 50% 95%);
-  --background-2: hsl(39 44% 90%);
-  --foreground: hsl(40 19% 10%);
-  --card: hsl(40 56% 97%);
-  --card-foreground: hsl(40 19% 10%);
-  --popover: hsl(40 56% 98%);
-  --popover-foreground: hsl(40 19% 10%);
-  --primary: hsl(24 88% 44%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(39 44% 90%);
-  --secondary-foreground: hsl(40 19% 10%);
-  --muted: hsl(39 40% 92%);
-  --muted-foreground: hsl(35 14% 38%);
-  --accent: hsl(39 44% 90%);
-  --accent-foreground: hsl(40 19% 10%);
-  --forest: hsl(168 52% 17%);
-  --success: hsl(160 80% 27%);
-  --warning: hsl(38 92% 45%);
-  --destructive: hsl(0 72% 46%);
+  --background: hsl(48 27% 96%); /* #F8F7F2 warm off-white */
+  --background-2: hsl(48 22% 93%);
+  --foreground: hsl(210 25% 16%); /* #1F2933 charcoal */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(210 25% 16%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(210 25% 16%);
+
+  --primary: hsl(147 23% 23%); /* olive #344E41 (slightly deepened for AA) */
+  --primary-foreground: hsl(48 30% 97%);
+  --secondary: hsl(48 18% 90%); /* light warm neutral (shadcn secondary) */
+  --secondary-foreground: hsl(210 25% 16%);
+  --accent: hsl(119 24% 93%); /* pale sage tint (hover/chips) */
+  --accent-foreground: hsl(147 30% 20%);
+
+  --muted: hsl(48 20% 92%);
+  --muted-foreground: hsl(210 10% 40%);
+
+  --border: hsl(48 16% 85%);
+  --input: hsl(48 16% 85%);
+  --ring: hsl(147 23% 23%);
+
+  --sage: hsl(119 24% 36%); /* accent for icons/small bits */
+  --gold: hsl(40 60% 38%); /* premium accent — text/border on light */
+  --gold-foreground: hsl(40 60% 12%);
+  --success: hsl(150 46% 30%); /* verified green (#2E7D52) */
+  --success-foreground: hsl(0 0% 100%);
+  --forest: hsl(147 26% 15%); /* dark olive (footer/value band) */
+  --warning: hsl(38 85% 40%);
+  --destructive: hsl(0 68% 44%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(39 41% 84%);
-  --input: hsl(39 41% 84%);
-  --ring: hsl(24 88% 44%);
-  --radius: 0.75rem;
 
-  /* Legacy named tokens (kept for existing markup during migration) */
-  --paper: hsl(40 50% 95%);
-  --paper-2: hsl(39 44% 90%);
-  --ink: hsl(40 19% 10%);
-  --ink-soft: hsl(35 14% 38%);
-  --line: hsl(39 41% 84%);
-  --brand-50: #fdf3e7;
-  --brand-100: #f9e2c6;
-  --brand-400: #e8832f;
-  --brand-500: #d1570e;
-  --brand-600: #b4480a;
-  --brand-700: #8f3908;
-  --emerald: hsl(160 80% 27%);
+  --radius: 0.625rem;
 
-  --shadow-card: 0 1px 2px hsl(40 19% 10% / 0.04), 0 8px 24px -12px hsl(40 19% 10% / 0.12);
-  --shadow-lift: 0 2px 4px hsl(40 19% 10% / 0.06), 0 18px 40px -16px hsl(40 19% 10% / 0.22);
-  --glow-top: hsl(24 88% 44% / 0.07);
-  --glow-side: hsl(168 52% 17% / 0.06);
+  /* Legacy aliases — repointed to olive/sage so old markup stays on-brand */
+  --paper: hsl(48 27% 96%);
+  --paper-2: hsl(48 22% 93%);
+  --ink: hsl(210 25% 16%);
+  --ink-soft: hsl(210 10% 40%);
+  --line: hsl(48 16% 85%);
+  --brand-50: hsl(119 24% 93%);
+  --brand-100: hsl(119 22% 86%);
+  --brand-400: hsl(119 24% 36%);
+  --brand-500: hsl(147 23% 23%);
+  --brand-600: hsl(147 25% 19%);
+  --brand-700: hsl(147 26% 15%);
+  --emerald: hsl(150 46% 30%);
+
+  --shadow-card: 0 1px 2px hsl(210 25% 16% / 0.04);
+  --shadow-lift: 0 2px 4px hsl(210 25% 16% / 0.05), 0 12px 28px -14px hsl(210 25% 16% / 0.12);
 }
 
 .dark {
-  --background: hsl(36 16% 7%);
-  --background-2: hsl(36 14% 10%);
-  --foreground: hsl(40 40% 94%);
-  --card: hsl(36 15% 9%);
-  --card-foreground: hsl(40 40% 94%);
-  --popover: hsl(36 15% 11%);
-  --popover-foreground: hsl(40 40% 94%);
-  --primary: hsl(24 90% 52%);
-  --primary-foreground: hsl(36 16% 7%);
-  --secondary: hsl(36 12% 13%);
-  --secondary-foreground: hsl(40 30% 88%);
-  --muted: hsl(36 12% 14%);
-  --muted-foreground: hsl(38 10% 62%);
-  --accent: hsl(36 12% 16%);
-  --accent-foreground: hsl(40 40% 94%);
-  --forest: hsl(168 36% 30%);
-  --success: hsl(158 64% 45%);
-  --warning: hsl(38 92% 56%);
-  --destructive: hsl(0 62% 52%);
+  --background: hsl(150 12% 8%);
+  --background-2: hsl(150 10% 11%);
+  --foreground: hsl(48 20% 92%);
+  --card: hsl(150 10% 10%);
+  --card-foreground: hsl(48 20% 92%);
+  --popover: hsl(150 10% 12%);
+  --popover-foreground: hsl(48 20% 92%);
+
+  --primary: hsl(119 30% 55%); /* brighten to sage for contrast on dark */
+  --primary-foreground: hsl(150 14% 8%);
+  --secondary: hsl(150 8% 16%);
+  --secondary-foreground: hsl(48 20% 92%);
+  --accent: hsl(150 10% 16%);
+  --accent-foreground: hsl(48 20% 92%);
+
+  --muted: hsl(150 8% 15%);
+  --muted-foreground: hsl(48 8% 62%);
+
+  --border: hsl(150 8% 18%);
+  --input: hsl(150 8% 19%);
+  --ring: hsl(119 30% 55%);
+
+  --sage: hsl(119 30% 55%);
+  --gold: hsl(42 58% 58%);
+  --gold-foreground: hsl(150 14% 8%);
+  --success: hsl(150 48% 46%);
+  --success-foreground: hsl(150 14% 8%);
+  --forest: hsl(147 22% 18%);
+  --warning: hsl(38 88% 56%);
+  --destructive: hsl(0 60% 52%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(36 10% 17%);
-  --input: hsl(36 10% 18%);
-  --ring: hsl(24 90% 52%);
 
-  --paper: hsl(36 16% 7%);
-  --paper-2: hsl(36 14% 10%);
-  --ink: hsl(40 40% 94%);
-  --ink-soft: hsl(38 10% 62%);
-  --line: hsl(36 10% 17%);
-  --brand-400: #f08a3a;
-  --brand-500: #e8832f;
-  --brand-600: #d1570e;
-  --brand-700: #b4480a;
-  --emerald: hsl(158 64% 45%);
+  --paper: hsl(150 12% 8%);
+  --paper-2: hsl(150 10% 11%);
+  --ink: hsl(48 20% 92%);
+  --ink-soft: hsl(48 8% 62%);
+  --line: hsl(150 8% 18%);
+  --brand-50: hsl(150 10% 16%);
+  --brand-100: hsl(150 10% 20%);
+  --brand-400: hsl(119 30% 55%);
+  --brand-500: hsl(119 30% 55%);
+  --brand-600: hsl(119 28% 48%);
+  --brand-700: hsl(119 26% 42%);
+  --emerald: hsl(150 48% 46%);
 
-  --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.3), 0 8px 24px -12px hsl(0 0% 0% / 0.5);
-  --shadow-lift: 0 2px 4px hsl(0 0% 0% / 0.4), 0 18px 40px -16px hsl(0 0% 0% / 0.6);
-  --glow-top: hsl(24 90% 52% / 0.1);
-  --glow-side: hsl(168 40% 40% / 0.08);
+  --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.4);
+  --shadow-lift: 0 2px 4px hsl(0 0% 0% / 0.4), 0 16px 36px -16px hsl(0 0% 0% / 0.6);
 }
 
 @theme inline {
-  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
   --color-background-2: var(--background-2);
@@ -114,8 +131,12 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-forest: var(--forest);
+  --color-sage: var(--sage);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-forest: var(--forest);
   --color-warning: var(--warning);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -123,13 +144,11 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Legacy named colors mapped to theme utilities */
   --color-paper: var(--paper);
   --color-paper-2: var(--paper-2);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-line: var(--line);
-  --color-muted-legacy: var(--ink-soft);
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-400: var(--brand-400);
@@ -141,7 +160,7 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-  --radius-card: 1rem;
+  --radius-card: 0.75rem;
 
   --shadow-card: var(--shadow-card);
   --shadow-lift: var(--shadow-lift);
@@ -158,10 +177,6 @@
     color: var(--foreground);
     font-family: var(--font-sans);
     background-color: var(--background);
-    background-image:
-      radial-gradient(60rem 40rem at 85% -10%, var(--glow-top), transparent 60%),
-      radial-gradient(50rem 40rem at -10% 10%, var(--glow-side), transparent 55%);
-    background-attachment: fixed;
   }
   * {
     box-sizing: border-box;
@@ -172,15 +187,13 @@
   }
 }
 
-/* Keep "muted" utility pointing at ink-soft for legacy text-muted usage */
 .text-muted {
   color: var(--ink-soft);
 }
 
 .font-display {
   font-family: var(--font-display);
-  font-optical-sizing: auto;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .rule-accent::before {
@@ -193,23 +206,14 @@
   background: var(--primary);
 }
 
+/* no-op: legacy className="grain" kept harmless (texture removed for clean B2B look) */
 .grain {
-  position: relative;
-}
-.grain::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.4;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  border-radius: inherit;
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -217,7 +221,7 @@
   }
 }
 .animate-rise {
-  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

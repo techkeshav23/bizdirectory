@@ -11,12 +11,12 @@ export async function Footer() {
   ]);
 
   return (
-    <footer className="mt-24 border-t border-line bg-forest text-[#e9e0cf]">
-      <div className="mx-auto max-w-6xl px-4 py-14">
+    <footer className="mt-24 border-t border-border bg-forest text-[#d7e0d7]">
+      <div className="mx-auto max-w-[1200px] px-4 py-14">
         <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div className="sm:col-span-2 md:col-span-1">
-            <div className="font-display text-2xl font-semibold tracking-tight text-paper">
-              Biz<span className="italic text-brand-400">Directory</span>
+            <div className="font-display text-2xl font-extrabold tracking-tight text-white">
+              Biz<span className="text-[#9bc4a0]">Directory</span>
             </div>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#b9cbc3]">
               India&apos;s direct customer-to-business discovery platform. Find verified suppliers

@@ -1,20 +1,20 @@
 import type { Metadata } from 'next';
-import { Fraunces, Hanken_Grotesk } from 'next/font/google';
+import { Manrope, Inter } from 'next/font/google';
 import { publicEnv } from '@/env';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
-const hanken = Hanken_Grotesk({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-hanken',
+  variable: '--font-inter',
   display: 'swap',
 });
-const fraunces = Fraunces({
+const manrope = Manrope({
   subsets: ['latin'],
-  variable: '--font-fraunces',
+  variable: '--font-manrope',
   display: 'swap',
-  axes: ['opsz'],
+  weight: ['500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${hanken.variable} ${fraunces.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${manrope.variable}`}>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}
