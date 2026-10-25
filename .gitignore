@@ -34,6 +34,10 @@ Thumbs.db
 .vscode/
 .idea/
 
-# client correspondence (contains third-party email — keep out of repo)
+# client correspondence & commercials — keep out of the public repo
 mail.md
 mail_reply.md
+CLIENT_REPLY.md
+PROPOSAL.md
+proposal.html
+CodeBlimp_Proposal_BizDirectory.pdf
