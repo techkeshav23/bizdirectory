@@ -3,7 +3,9 @@ FROM node:22-slim AS builder
 RUN corepack enable
 WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile
+# Install ONLY the web subgraph (web + @app/types + their deps) — skips api's deps.
+# Halves build-time disk/footprint on constrained build servers.
+RUN pnpm install --frozen-lockfile --filter "@app/web..."
 # NEXT_PUBLIC_* values are inlined at build time.
 ARG NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_WA_COUNTRY_CODE=91

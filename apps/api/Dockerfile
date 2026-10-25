@@ -6,7 +6,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 make g+
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile
+# Install ONLY the api subgraph (api + @app/types + their deps) — skips web's deps.
+# Halves build-time disk/footprint on constrained build servers.
+RUN pnpm install --frozen-lockfile --filter "@app/api..."
 RUN pnpm --filter @app/types build \
   && pnpm --filter @app/api exec prisma generate \
   && pnpm --filter @app/api build
