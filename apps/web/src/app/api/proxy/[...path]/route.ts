@@ -18,9 +18,12 @@ async function forward(req: NextRequest, path: string[]) {
   const body = await res.text();
   const response = new NextResponse(body, { status: res.status });
   response.headers.set('content-type', res.headers.get('content-type') ?? 'application/json');
-  // Pass through any Set-Cookie from the API (auth flows).
-  const setCookie = res.headers.get('set-cookie');
-  if (setCookie) response.headers.set('set-cookie', setCookie);
+  // Pass through ALL Set-Cookie headers from the API (auth sets access + refresh).
+  const setCookies =
+    typeof res.headers.getSetCookie === 'function'
+      ? res.headers.getSetCookie()
+      : ([res.headers.get('set-cookie')].filter(Boolean) as string[]);
+  for (const c of setCookies) response.headers.append('set-cookie', c);
   return response;
 }
 
