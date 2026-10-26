@@ -1,4 +1,12 @@
-import { Bookmark, Store, ShieldCheck, ScrollText, type LucideIcon } from 'lucide-react';
+import {
+  Bookmark,
+  Store,
+  ShieldCheck,
+  ScrollText,
+  FolderTree,
+  MapPin,
+  type LucideIcon,
+} from 'lucide-react';
 
 export type NavRole = 'all' | 'owner' | 'admin';
 
@@ -28,6 +36,8 @@ export const navSections: NavSection[] = [
     label: 'Admin',
     items: [
       { name: 'Moderation', href: '/admin', icon: ShieldCheck, role: 'admin', exact: true },
+      { name: 'Categories', href: '/admin/categories', icon: FolderTree, role: 'admin' },
+      { name: 'Locations', href: '/admin/locations', icon: MapPin, role: 'admin' },
       { name: 'Audit Log', href: '/admin/audit', icon: ScrollText, role: 'admin' },
     ],
   },

@@ -1,5 +1,17 @@
-import { Controller, Get, Module, NotFoundException, Param } from '@nestjs/common';
-import { Public } from '../../common/decorators';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Module,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { categoryUpsertSchema, type CategoryUpsertDto } from '@app/types';
+import { Public, Roles } from '../../common/decorators';
+import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../../redis/redis.service';
 
@@ -20,6 +32,63 @@ class CategoriesController {
         select: { id: true, name: true, slug: true, iconUrl: true, parentId: true },
       }),
     );
+  }
+
+  // --- Admin management (static path declared before :slug) ---
+  @Roles('admin')
+  @Get('manage')
+  adminList(): Promise<unknown> {
+    return this.prisma.category.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        iconUrl: true,
+        parentId: true,
+        sortOrder: true,
+        isActive: true,
+        parent: { select: { name: true } },
+      },
+    });
+  }
+
+  @Roles('admin')
+  @Post()
+  async create(
+    @Body(new ZodValidationPipe(categoryUpsertSchema)) dto: CategoryUpsertDto,
+  ): Promise<unknown> {
+    const created = await this.prisma.category.create({
+      data: {
+        name: dto.name,
+        slug: dto.slug,
+        parentId: dto.parentId ?? null,
+        iconUrl: dto.iconUrl ?? null,
+        sortOrder: dto.sortOrder,
+        isActive: dto.isActive,
+      },
+    });
+    await this.redis.del('cache:categories:all');
+    return created;
+  }
+
+  @Roles('admin')
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(categoryUpsertSchema.partial())) dto: Partial<CategoryUpsertDto>,
+  ): Promise<unknown> {
+    const updated = await this.prisma.category.update({ where: { id }, data: dto });
+    await this.redis.del('cache:categories:all');
+    return updated;
+  }
+
+  @Roles('admin')
+  @Delete(':id')
+  async remove(@Param('id') id: string): Promise<{ ok: true }> {
+    await this.prisma.category.delete({ where: { id } });
+    await this.redis.del('cache:categories:all');
+    return { ok: true };
   }
 
   @Public()

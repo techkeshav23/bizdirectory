@@ -53,7 +53,7 @@ const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'destructive' | 'mu
 export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [list, setList] = useState<AdminBusiness[]>([]);
-  const [filter, setFilter] = useState('pending_review');
+  const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reject, setReject] = useState<AdminBusiness | null>(null);
@@ -65,7 +65,10 @@ export default function AdminPage() {
     try {
       const [s, l] = await Promise.all([
         clientApi<Stats>('GET', '/admin/stats'),
-        clientApi<AdminBusiness[]>('GET', `/admin/businesses?status=${filter}`),
+        clientApi<AdminBusiness[]>(
+          'GET',
+          filter === 'all' ? '/admin/businesses' : `/admin/businesses?status=${filter}`,
+        ),
       ]);
       setStats(s);
       setList(l);
@@ -181,6 +184,7 @@ export default function AdminPage() {
       <div className="mt-8">
         <Tabs value={filter} onValueChange={setFilter} className="mb-4">
           <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="pending_review">Pending</TabsTrigger>
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="suspended">Suspended</TabsTrigger>

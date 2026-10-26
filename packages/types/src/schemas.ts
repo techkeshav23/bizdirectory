@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { BusinessStatus, ContactEventType, GstinStatus } from './enums';
+import { BusinessStatus, ContactEventType, GstinStatus, LocationType } from './enums';
+
+const slugField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(2)
+  .max(140)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use a lowercase, hyphenated slug');
 
 // ---------- Shared primitives ----------
 export const phoneSchema = z
@@ -124,6 +132,31 @@ export const gstinOverrideSchema = z.object({
   legalName: z.string().trim().max(200).optional(),
 });
 export type GstinOverrideDto = z.infer<typeof gstinOverrideSchema>;
+
+export const categoryUpsertSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  slug: slugField,
+  parentId: z.string().uuid().nullish(),
+  iconUrl: z.string().url().nullish(),
+  sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
+  isActive: z.boolean().default(true),
+});
+export type CategoryUpsertDto = z.infer<typeof categoryUpsertSchema>;
+
+export const locationUpsertSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  slug: slugField,
+  type: LocationType,
+  parentId: z.string().uuid().nullish(),
+  pincode: pincodeSchema.nullish(),
+});
+export type LocationUpsertDto = z.infer<typeof locationUpsertSchema>;
+
+export const updateUserRoleSchema = z.object({
+  role: z.enum(['customer', 'business_owner', 'admin']).optional(),
+  status: z.enum(['active', 'blocked']).optional(),
+});
+export type UpdateUserRoleDto = z.infer<typeof updateUserRoleSchema>;
 
 // ---------- Subscriptions / Payments ----------
 export const checkoutSchema = z.object({
