@@ -33,6 +33,7 @@ export interface BusinessCardDto {
 export interface SearchResponse {
   items: BusinessCardDto[];
   nextCursor: string | null;
+  total?: number;
 }
 
 export interface ProductDto {

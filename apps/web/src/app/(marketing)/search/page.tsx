@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { apiGet } from '@/lib/api';
 import type { SearchResponse, CategoryDto, LocationDto } from '@/lib/types';
-import { BusinessCard } from '@/components/directory/BusinessCard';
+import { LoadMoreBusinesses } from '@/components/directory/LoadMoreBusinesses';
 import { FilterBar } from '@/components/directory/FilterBar';
 import { EmptyState } from '@/components/shared';
 import { SearchX } from 'lucide-react';
@@ -29,10 +29,13 @@ export default async function SearchPage({
     apiGet<SearchResponse>(`/search?${qs.toString()}`).catch(() => ({
       items: [],
       nextCursor: null,
+      total: 0,
     })),
     apiGet<CategoryDto[]>('/categories', { revalidate: 300 }).catch(() => []),
     apiGet<LocationDto[]>('/locations?type=city', { revalidate: 300 }).catch(() => []),
   ]);
+
+  const total = data.total ?? data.items.length;
 
   return (
     <div className="animate-rise">
@@ -41,7 +44,7 @@ export default async function SearchPage({
         {sp.q ? `“${sp.q}”` : 'All businesses'}
       </h1>
       <p className="mt-1 text-muted-foreground">
-        {data.items.length} business{data.items.length === 1 ? '' : 'es'} found
+        {total} business{total === 1 ? '' : 'es'} found
         {sp.city ? ` in ${sp.city}` : ''}
       </p>
 
@@ -60,11 +63,11 @@ export default async function SearchPage({
               description="Try a different keyword, city, or clear your filters."
             />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {data.items.map((b) => (
-                <BusinessCard key={b.id} business={b} />
-              ))}
-            </div>
+            <LoadMoreBusinesses
+              initialItems={data.items}
+              initialCursor={data.nextCursor}
+              query={qs.toString()}
+            />
           )}
         </div>
       </div>
