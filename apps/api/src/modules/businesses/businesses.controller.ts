@@ -15,7 +15,10 @@ import { BusinessesService } from './businesses.service';
 export class BusinessesController {
   constructor(private readonly businesses: BusinessesService) {}
 
-  @Roles('business_owner', 'admin')
+  // A first-time customer may create a listing; create() promotes them to
+  // business_owner. The JwtAuthGuard reads the fresh DB role on later requests,
+  // so owner-only routes work immediately after promotion (no re-login needed).
+  @Roles('customer', 'business_owner', 'admin')
   @Post()
   create(
     @CurrentUser() user: AuthUser,

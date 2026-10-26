@@ -34,7 +34,7 @@ function setAuthCookies(res: Response, pair: TokenPair): void {
     httpOnly: true,
     secure,
     sameSite: 'lax',
-    maxAge: 15 * 60 * 1000,
+    maxAge: 2 * 60 * 60 * 1000,
     path: '/',
   });
   res.cookie('refresh_token', pair.refreshToken, {
