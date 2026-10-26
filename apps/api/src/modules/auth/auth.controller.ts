@@ -26,19 +26,24 @@ import { AuthService } from './auth.service';
 import type { TokenPair } from './token.service';
 
 function setAuthCookies(res: Response, pair: TokenPair): void {
-  const secure = process.env.NODE_ENV === 'production';
+  // Secure cookies are REJECTED by browsers over plain HTTP. This deployment is
+  // served over HTTP (sslip.io, no SSL), so default to non-secure and let an
+  // explicit COOKIE_SECURE=true re-enable it once the site is behind HTTPS.
+  const secure = process.env.COOKIE_SECURE === 'true';
   res.cookie('access_token', pair.accessToken, {
     httpOnly: true,
     secure,
     sameSite: 'lax',
     maxAge: 15 * 60 * 1000,
+    path: '/',
   });
   res.cookie('refresh_token', pair.refreshToken, {
     httpOnly: true,
     secure,
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
-    path: '/api/auth',
+    // Path '/' so the cookie reaches the Next proxy (/api/proxy/auth/refresh).
+    path: '/',
   });
 }
 
@@ -113,8 +118,8 @@ export class AuthController {
   ): Promise<{ ok: true }> {
     const token = (req.cookies as Record<string, string>)?.refresh_token;
     if (token) await this.auth.logout(token);
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token', { path: '/api/auth' });
+    res.clearCookie('access_token', { path: '/' });
+    res.clearCookie('refresh_token', { path: '/' });
     return { ok: true };
   }
 
