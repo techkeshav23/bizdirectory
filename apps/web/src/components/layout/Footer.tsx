@@ -38,11 +38,15 @@ export async function Footer() {
             ))}
           </FooterCol>
           <FooterCol title="Company">
+            <FooterLink href="/explore">Explore</FooterLink>
+            <FooterLink href="/how-it-works">How it works</FooterLink>
             <FooterLink href="/register">List your business</FooterLink>
             <FooterLink href="/pricing">Pricing</FooterLink>
+            <FooterLink href="/contact">Contact</FooterLink>
             <FooterLink href="/about">About</FooterLink>
             <FooterLink href="/privacy">Privacy</FooterLink>
             <FooterLink href="/terms">Terms</FooterLink>
+            <FooterLink href="/disclaimer">Disclaimer</FooterLink>
           </FooterCol>
         </div>
       </div>

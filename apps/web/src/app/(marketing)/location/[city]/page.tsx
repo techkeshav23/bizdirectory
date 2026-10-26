@@ -4,7 +4,7 @@ import { tagCity } from '@app/types';
 import { apiGet } from '@/lib/api';
 import type { CategoryDto, SearchResponse } from '@/lib/types';
 import { Breadcrumbs } from '@/components/directory/Breadcrumbs';
-import { BusinessCard } from '@/components/directory/BusinessCard';
+import { LoadMoreBusinesses } from '@/components/directory/LoadMoreBusinesses';
 
 export const revalidate = 21600;
 
@@ -19,10 +19,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { city } = await params;
   const name = toTitle(city);
+  const data = await apiGet<SearchResponse>(`/search?city=${city}&limit=1`, {
+    revalidate: 21600,
+    tags: [tagCity(city)],
+  }).catch(() => ({ items: [], nextCursor: null, total: 0 }));
+  const indexable = (data.total ?? 0) >= 5;
   return {
     title: `Businesses in ${name}`,
     description: `Discover verified B2B businesses, suppliers and service providers in ${name}. Contact them directly on BizDirectory.`,
     alternates: { canonical: `/location/${city}` },
+    robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 
@@ -33,38 +39,45 @@ export default async function LocationPage({ params }: { params: Promise<{ city:
     apiGet<SearchResponse>(`/search?city=${city}`, {
       revalidate: 21600,
       tags: [tagCity(city)],
-    }).catch(() => ({ items: [], nextCursor: null })),
-    apiGet<CategoryDto[]>('/categories', { revalidate: 3600, tags: ['categories'] }).catch(
-      () => [],
-    ),
+    }).catch(() => ({ items: [], nextCursor: null, total: 0 })),
+    apiGet<CategoryDto[]>('/categories', { revalidate: 3600, tags: ['categories'] }).catch(() => []),
   ]);
 
   return (
     <div className="animate-rise">
       <Breadcrumbs items={[{ name, href: `/location/${city}` }]} />
-      <div className="text-xs font-semibold uppercase tracking-widest text-brand-500">City</div>
-      <h1 className="mt-1.5 font-display text-4xl font-semibold tracking-tight text-ink">
+      <div className="text-xs font-semibold uppercase tracking-widest text-primary">City</div>
+      <h1 className="mt-1.5 font-display text-4xl font-semibold tracking-tight text-foreground">
         Businesses in {name}
       </h1>
-      <p className="mb-6 mt-1 text-ink-soft">{data.items.length} businesses listed</p>
+      <p className="mb-6 mt-1 text-muted-foreground">
+        {data.total ?? data.items.length} businesses listed
+      </p>
 
       <div className="mb-8 flex flex-wrap gap-2">
         {categories.slice(0, 8).map((c) => (
           <Link
             key={c.id}
             href={`/category/${c.slug}/${city}`}
-            className="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-ink-soft transition-colors hover:border-brand-400 hover:text-brand-600"
+            className="rounded-full border border-border bg-card px-3.5 py-1.5 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
           >
             {c.name}
           </Link>
         ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {data.items.map((b) => (
-          <BusinessCard key={b.id} business={b} />
-        ))}
-      </div>
+      {data.items.length > 0 ? (
+        <LoadMoreBusinesses
+          initialItems={data.items}
+          initialCursor={data.nextCursor}
+          query={`city=${city}`}
+        />
+      ) : (
+        <div className="rounded-[var(--radius-card)] border border-dashed border-border bg-card p-14 text-center">
+          <div className="font-display text-2xl text-foreground">No businesses in {name} yet</div>
+          <p className="mt-2 text-muted-foreground">Check back soon — or list yours.</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -14,10 +14,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { category } = await params;
   const name = toTitle(category);
+  // Thin-page guardrail: only index a category page once it has >=5 listings.
+  const data = await apiGet<SearchResponse>(`/search?category=${category}&limit=1`, {
+    revalidate: 21600,
+    tags: [tagCategory(category)],
+  }).catch(() => ({ items: [], nextCursor: null, total: 0 }));
+  const indexable = (data.total ?? 0) >= 5;
   return {
     title: `${name} — verified suppliers & businesses`,
     description: `Find verified ${name} across India. Browse listings and contact businesses directly via call or WhatsApp.`,
     alternates: { canonical: `/category/${category}` },
+    robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 

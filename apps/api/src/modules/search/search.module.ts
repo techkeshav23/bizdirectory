@@ -94,6 +94,69 @@ class SearchController {
     return { items, nextCursor, total };
   }
 
+  // Landing pages that qualify for indexing: a category / city / combo must have
+  // at least MIN_PUBLISH active listings. Prevents thin/empty SEO pages and keeps
+  // the sitemap from emitting the full category×city cartesian product.
+  @Public()
+  @Get('landing')
+  async landing(): Promise<{
+    categories: string[];
+    cities: string[];
+    combos: { category: string; city: string }[];
+  }> {
+    const MIN_PUBLISH = 5;
+    const where = { status: 'active' as const, deletedAt: null };
+    const [byCat, byCity, byCombo] = await Promise.all([
+      this.prisma.business.groupBy({
+        by: ['primaryCategoryId'],
+        where,
+        _count: { _all: true },
+        having: { primaryCategoryId: { _count: { gte: MIN_PUBLISH } } },
+      }),
+      this.prisma.business.groupBy({
+        by: ['locationId'],
+        where,
+        _count: { _all: true },
+        having: { locationId: { _count: { gte: MIN_PUBLISH } } },
+      }),
+      this.prisma.business.groupBy({
+        by: ['primaryCategoryId', 'locationId'],
+        where,
+        _count: { _all: true },
+        having: { primaryCategoryId: { _count: { gte: MIN_PUBLISH } } },
+      }),
+    ]);
+
+    const catIds = new Set<string>();
+    const locIds = new Set<string>();
+    for (const r of byCat) catIds.add(r.primaryCategoryId);
+    for (const r of byCity) locIds.add(r.locationId);
+    for (const r of byCombo) {
+      catIds.add(r.primaryCategoryId);
+      locIds.add(r.locationId);
+    }
+    const [cats, locs] = await Promise.all([
+      this.prisma.category.findMany({
+        where: { id: { in: [...catIds] } },
+        select: { id: true, slug: true },
+      }),
+      this.prisma.location.findMany({
+        where: { id: { in: [...locIds] } },
+        select: { id: true, slug: true },
+      }),
+    ]);
+    const catSlug = new Map(cats.map((c) => [c.id, c.slug]));
+    const locSlug = new Map(locs.map((l) => [l.id, l.slug]));
+
+    return {
+      categories: byCat.map((r) => catSlug.get(r.primaryCategoryId)).filter((s): s is string => !!s),
+      cities: byCity.map((r) => locSlug.get(r.locationId)).filter((s): s is string => !!s),
+      combos: byCombo
+        .map((r) => ({ category: catSlug.get(r.primaryCategoryId), city: locSlug.get(r.locationId) }))
+        .filter((x): x is { category: string; city: string } => !!x.category && !!x.city),
+    };
+  }
+
   @Public()
   @Get('suggest')
   async suggest(@Query('q') term?: string): Promise<unknown[]> {
