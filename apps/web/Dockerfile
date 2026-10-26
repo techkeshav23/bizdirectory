@@ -16,11 +16,15 @@ ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
     NODE_OPTIONS=--max-old-space-size=4096
 RUN pnpm --filter @app/types build && pnpm --filter @app/web build
 
+# ---- Lean runtime: Next.js standalone output (traced deps only, ~250MB vs ~1.5GB) ----
 FROM node:22-slim AS runner
-RUN corepack enable
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
 WORKDIR /app
-COPY --from=builder /app /app
-WORKDIR /app/apps/web
+# standalone bundles a minimal server + only the node_modules actually used.
+# With outputFileTracingRoot = repo root, the layout mirrors the monorepo.
+COPY --from=builder /app/apps/web/.next/standalone ./
+COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 EXPOSE 3000
-CMD ["pnpm", "start"]
+CMD ["node", "apps/web/server.js"]

@@ -6,6 +6,8 @@ import type { BusinessDetailDto } from '@/lib/types';
 import { publicEnv } from '@/env';
 import { Breadcrumbs } from '@/components/directory/Breadcrumbs';
 import { ContactButtons } from '@/components/directory/ContactButtons';
+import { MobileContactBar } from '@/components/directory/MobileContactBar';
+import { TrustSection } from '@/components/directory/TrustSection';
 import { SaveButton } from '@/components/directory/SaveButton';
 import { ReviewForm } from '@/components/directory/ReviewForm';
 import { RatingStars } from '@/components/directory/RatingStars';
@@ -58,7 +60,7 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
   if (business.redirectTo) redirect(`/business/${business.redirectTo}`);
 
   return (
-    <article className="animate-rise">
+    <article className="animate-rise pb-24 md:pb-0">
       <Breadcrumbs
         items={[
           { name: business.primaryCategory.name, href: `/category/${business.primaryCategory.slug}` },
@@ -155,6 +157,14 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
         </section>
       )}
 
+      <TrustSection
+        gstinStatus={business.gstinStatus}
+        legalName={business.legalName}
+        locationName={business.location.name}
+        address={business.address}
+        website={business.website}
+      />
+
       {business.products.length > 0 && (
         <section className="mt-6">
           <h2 className="rule-accent mb-5 font-display text-2xl font-semibold tracking-tight text-ink">
@@ -223,6 +233,13 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
           <ReviewForm businessId={business.id} />
         </div>
       </section>
+
+      <MobileContactBar
+        businessId={business.id}
+        businessName={business.name}
+        phone={business.contactPhone}
+        whatsapp={business.whatsappNumber}
+      />
     </article>
   );
 }

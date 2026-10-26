@@ -26,7 +26,7 @@ import { BusinessCard } from '@/components/directory/BusinessCard';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { publicEnv } from '@/env';
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const CAT_ICONS: LucideIcon[] = [
   Factory, Package, Wrench, Boxes, Shirt, FlaskConical, Wheat, Sofa, Printer, Zap, Hammer, Truck,
@@ -41,11 +41,11 @@ const TRUST = [
 
 export default async function HomePage() {
   const [categories, cities, featured] = await Promise.all([
-    apiGet<CategoryDto[]>('/categories', { revalidate: 3600, tags: ['categories'] }).catch(() => []),
-    apiGet<LocationDto[]>('/locations?type=city', { revalidate: 86400, tags: ['cities'] }).catch(
+    apiGet<CategoryDto[]>('/categories', { revalidate: 60, tags: ['categories'] }).catch(() => []),
+    apiGet<LocationDto[]>('/locations?type=city', { revalidate: 300, tags: ['cities'] }).catch(
       () => [],
     ),
-    apiGet<SearchResponse>('/search?sort=rating&limit=6', { revalidate: 1800 }).catch(() => ({
+    apiGet<SearchResponse>('/search?sort=rating&limit=6', { revalidate: 60 }).catch(() => ({
       items: [],
       nextCursor: null,
     })),
