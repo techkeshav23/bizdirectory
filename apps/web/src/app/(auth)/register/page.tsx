@@ -194,7 +194,7 @@ export default function RegisterPage() {
             className="h-11 w-full rounded-lg border border-input px-3 uppercase outline-none focus:border-brand-500"
           />
           {legalName && (
-            <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            <div className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success ring-1 ring-success/20">
               Verified: {legalName}
             </div>
           )}

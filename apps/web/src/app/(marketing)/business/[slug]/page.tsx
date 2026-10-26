@@ -107,7 +107,7 @@ export default async function BusinessPage({ params }: { params: Promise<{ slug:
           }
         />
         <div className="relative px-6 pb-6 sm:px-8">
-          <div className="-mt-12 flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl bg-paper-2 font-display text-4xl font-semibold text-brand-600 ring-4 ring-white shadow-md">
+          <div className="-mt-12 flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl bg-muted font-display text-4xl font-semibold text-primary ring-4 ring-card shadow-md">
             {business.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={business.logoUrl} alt={business.name} className="h-full w-full object-cover" />

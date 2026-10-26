@@ -15,7 +15,7 @@ const buttonVariants = cva(
         ghost: 'text-foreground hover:bg-accent',
         secondary: 'bg-secondary text-secondary-foreground hover:brightness-95',
         destructive: 'bg-destructive text-destructive-foreground hover:brightness-110',
-        whatsapp: 'bg-[#1fa855] text-white hover:bg-[#188544]',
+        whatsapp: 'bg-[#25D366] text-white hover:bg-[#1da851]',
       },
       size: {
         sm: 'h-9 px-4 text-sm',

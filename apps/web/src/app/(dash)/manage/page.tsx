@@ -115,7 +115,7 @@ export default function ManagePage() {
       <PageHeader
         icon={Store}
         title="Your businesses"
-        description="Manage your listings, products and leads."
+        description="Manage your listings, products and customer enquiries."
         actions={
           <Button href="/register">
             <Plus /> Add business
@@ -128,7 +128,7 @@ export default function ManagePage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard label="Businesses" value={data?.businesses.length ?? 0} icon={Store} />
-          <StatCard label="Leads (30d)" value={totalLeads} icon={MessageCircle} />
+          <StatCard label="Enquiries (30d)" value={totalLeads} icon={MessageCircle} />
           <StatCard label="Calls" value={leads.call ?? 0} icon={Phone} />
           <StatCard label="WhatsApp" value={leads.whatsapp ?? 0} icon={MessageCircle} />
         </div>

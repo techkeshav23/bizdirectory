@@ -13,7 +13,7 @@ export function ReviewForm({ businessId }: { businessId: string }) {
 
   if (done)
     return (
-      <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+      <p className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success ring-1 ring-success/20">
         Thanks! Your review will appear once approved.
       </p>
     );
@@ -53,7 +53,7 @@ export function ReviewForm({ businessId }: { businessId: string }) {
         placeholder="Share your experience (optional)"
         className="min-h-20 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring"
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" size="sm" disabled={busy}>
         {busy ? 'Submitting…' : 'Submit review'}
       </Button>

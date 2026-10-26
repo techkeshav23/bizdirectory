@@ -19,7 +19,9 @@ export function SaveButton({ businessId }: { businessId: string }) {
         setSaved(true);
       }
     } catch {
-      window.location.href = `/login?next=/business`;
+      // Send them back to the page they were on after login (not a dead /business).
+      const next = encodeURIComponent(window.location.pathname);
+      window.location.href = `/login?next=${next}`;
     } finally {
       setBusy(false);
     }

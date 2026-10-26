@@ -177,7 +177,7 @@ export default function AdminPage() {
           <StatCard label="Pending" value={stats.pending} icon={Clock} />
           <StatCard label="Products" value={stats.products} icon={Package} />
           <StatCard label="Users" value={stats.users} icon={UsersIcon} />
-          <StatCard label="Leads" value={stats.contactEvents} icon={MessageSquare} />
+          <StatCard label="Contacts" value={stats.contactEvents} icon={MessageSquare} />
         </div>
       ) : null}
 

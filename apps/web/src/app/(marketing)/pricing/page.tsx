@@ -27,12 +27,12 @@ export default async function PricingPage() {
   return (
     <div className="animate-rise">
       <div className="mb-12 text-center">
-        <div className="text-xs font-semibold uppercase tracking-widest text-brand-500">Pricing</div>
-        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+        <div className="text-xs font-semibold uppercase tracking-widest text-primary">Pricing</div>
+        <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
           Plans for every business
         </h1>
-        <p className="mx-auto mt-3 max-w-md text-ink-soft">
-          Start free. Upgrade to get verified, rank higher, and win more leads.
+        <p className="mx-auto mt-3 max-w-md text-muted-foreground">
+          Start free. Upgrade to get verified, rank higher, and get discovered by more customers.
         </p>
       </div>
 
@@ -43,40 +43,52 @@ export default async function PricingPage() {
           return (
             <div
               key={plan.id}
-              className={`grain relative overflow-hidden rounded-card p-7 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-1 ${
+              className={`relative overflow-hidden rounded-[var(--radius-card)] p-7 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-1 ${
                 highlight
-                  ? 'bg-forest text-paper md:-mt-4 md:pb-12'
-                  : 'border border-line bg-card'
+                  ? 'bg-primary text-primary-foreground md:-mt-4 md:pb-12'
+                  : 'border border-border bg-card'
               }`}
             >
               {highlight && (
-                <div className="mb-3 inline-block rounded-full bg-brand-500 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-white">
+                <div className="mb-3 inline-block rounded-full bg-primary-foreground/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-primary-foreground">
                   Most popular
                 </div>
               )}
-              <h2 className={`font-display text-2xl font-semibold ${highlight ? 'text-paper' : 'text-ink'}`}>
+              <h2
+                className={`font-display text-2xl font-semibold ${
+                  highlight ? 'text-primary-foreground' : 'text-foreground'
+                }`}
+              >
                 {plan.name}
               </h2>
               <p className="mt-3 font-display text-4xl font-semibold">
                 {price === 0 ? 'Free' : inr(price)}
                 {price > 0 && (
-                  <span className={`text-base font-normal ${highlight ? 'text-[#b9cbc3]' : 'text-muted'}`}>
+                  <span
+                    className={`text-base font-normal ${
+                      highlight ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                    }`}
+                  >
                     {' '}
                     /mo
                   </span>
                 )}
               </p>
-              <ul className={`mt-6 space-y-3 text-sm ${highlight ? 'text-[#dbe5df]' : 'text-ink-soft'}`}>
+              <ul
+                className={`mt-6 space-y-3 text-sm ${
+                  highlight ? 'text-primary-foreground/90' : 'text-muted-foreground'
+                }`}
+              >
                 {(plan.features ?? []).map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
-                    <span className={highlight ? 'text-brand-400' : 'text-emerald-600'}>✓</span>
+                    <span className={highlight ? 'text-primary-foreground' : 'text-success'}>✓</span>
                     {f}
                   </li>
                 ))}
               </ul>
               <Button
                 href="/manage"
-                variant={highlight ? 'primary' : 'outline'}
+                variant={highlight ? 'secondary' : 'outline'}
                 className="mt-7 w-full"
               >
                 {price === 0 ? 'Get started' : `Choose ${plan.name}`}
@@ -86,7 +98,7 @@ export default async function PricingPage() {
         })}
       </div>
 
-      <p className="mt-10 text-center text-sm text-muted">
+      <p className="mt-10 text-center text-sm text-muted-foreground">
         Payments processed securely via Razorpay · You own 100% of your data.
       </p>
     </div>

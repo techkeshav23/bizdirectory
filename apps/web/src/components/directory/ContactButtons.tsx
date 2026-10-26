@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { telLink, waLink } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 
@@ -22,28 +21,16 @@ function track(businessId: string, type: 'call' | 'whatsapp' | 'view_phone', pro
 }
 
 export function ContactButtons({ businessId, businessName, phone, whatsapp, productName }: Props) {
-  const [revealed, setRevealed] = useState(false);
   const waText = productName
     ? `Hi, I found ${businessName} on BizDirectory and I'm interested in "${productName}".`
     : `Hi, I found ${businessName} on BizDirectory and would like to enquire.`;
 
   return (
     <div className="flex flex-wrap gap-3">
-      {!revealed ? (
-        <Button
-          variant="primary"
-          onClick={() => {
-            setRevealed(true);
-            track(businessId, 'view_phone');
-          }}
-        >
-          Show phone number
-        </Button>
-      ) : (
-        <Button variant="primary" href={telLink(phone)} onClick={() => track(businessId, 'call')}>
-          📞 Call {phone}
-        </Button>
-      )}
+      {/* Direct one-tap call — no reveal step, consistent with the mobile bar. */}
+      <Button variant="primary" href={telLink(phone)} onClick={() => track(businessId, 'call')}>
+        📞 Call {phone}
+      </Button>
 
       {whatsapp && (
         <a
