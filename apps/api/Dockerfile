@@ -22,5 +22,5 @@ WORKDIR /app
 COPY --from=builder /app /app
 WORKDIR /app/apps/api
 EXPOSE 4000
-# Apply migrations, then start. Fails fast if DB is unreachable.
-CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node dist/main.js"]
+# Apply migrations, seed (idempotent, non-blocking), then start.
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy && (pnpm db:seed || echo '[seed] skipped/failed, continuing') && node dist/main.js"]
