@@ -9,6 +9,8 @@ import {
   MessageSquare,
   CreditCard,
   Megaphone,
+  LayoutDashboard,
+  Settings,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -29,12 +31,18 @@ export interface NavSection {
 
 export const navSections: NavSection[] = [
   {
-    label: 'Overview',
-    items: [{ name: 'Saved', href: '/dashboard', icon: Bookmark, role: 'all', exact: true }],
+    label: 'My Business',
+    items: [
+      { name: 'Overview', href: '/dashboard/business', icon: LayoutDashboard, role: 'owner' },
+      { name: 'My Listings', href: '/manage', icon: Store, role: 'owner', exact: true },
+    ],
   },
   {
-    label: 'My Business',
-    items: [{ name: 'My Listings', href: '/manage', icon: Store, role: 'owner', exact: true }],
+    label: 'Account',
+    items: [
+      { name: 'Saved', href: '/dashboard', icon: Bookmark, role: 'all', exact: true },
+      { name: 'Settings', href: '/settings', icon: Settings, role: 'all' },
+    ],
   },
   {
     label: 'Admin',
