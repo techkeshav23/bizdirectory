@@ -7,6 +7,8 @@ import {
   MapPin,
   Users,
   MessageSquare,
+  CreditCard,
+  Megaphone,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -43,6 +45,13 @@ export const navSections: NavSection[] = [
       { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare, role: 'admin' },
       { name: 'Users', href: '/admin/users', icon: Users, role: 'admin' },
       { name: 'Audit Log', href: '/admin/audit', icon: ScrollText, role: 'admin' },
+    ],
+  },
+  {
+    label: 'Monetization',
+    items: [
+      { name: 'Plans', href: '/admin/plans', icon: CreditCard, role: 'admin' },
+      { name: 'Promotions', href: '/admin/promotions', icon: Megaphone, role: 'admin' },
     ],
   },
 ];

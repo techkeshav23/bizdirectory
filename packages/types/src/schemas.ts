@@ -158,6 +158,23 @@ export const updateUserRoleSchema = z.object({
 });
 export type UpdateUserRoleDto = z.infer<typeof updateUserRoleSchema>;
 
+export const planUpsertSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  slug: slugField.max(80),
+  price: z.coerce.number().nonnegative().max(1_000_000).default(0),
+  interval: z.enum(['monthly', 'yearly']).default('yearly'),
+  features: z.array(z.string().trim().min(1).max(120)).max(20).default([]),
+  sortOrder: z.coerce.number().int().min(0).max(9999).default(0),
+  isActive: z.boolean().default(true),
+});
+export type PlanUpsertDto = z.infer<typeof planUpsertSchema>;
+
+export const promotionSchema = z.object({
+  isFeatured: z.boolean().optional(),
+  isSponsored: z.boolean().optional(),
+});
+export type PromotionDto = z.infer<typeof promotionSchema>;
+
 // ---------- Subscriptions / Payments ----------
 export const checkoutSchema = z.object({
   businessId: z.string().uuid(),

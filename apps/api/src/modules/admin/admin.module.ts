@@ -2,19 +2,25 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Module,
   Param,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   gstinOverrideSchema,
   moderateBusinessSchema,
+  planUpsertSchema,
+  promotionSchema,
   updateUserRoleSchema,
   type BusinessStatus,
   type GstinOverrideDto,
   type ModerateBusinessDto,
+  type PlanUpsertDto,
+  type PromotionDto,
   type UpdateUserRoleDto,
   type UserRole,
   type UserStatus,
@@ -186,6 +192,93 @@ class AdminController {
     });
     await this.audit(admin.id, 'update_user', 'user', id, null, dto);
     return updated;
+  }
+
+  // --- Promotions: feature / sponsor a listing ---
+  @Patch('businesses/:id/promotion')
+  async promote(
+    @CurrentUser() admin: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(promotionSchema)) dto: PromotionDto,
+  ): Promise<unknown> {
+    const updated = await this.prisma.business.update({
+      where: { id },
+      data: {
+        ...(dto.isFeatured !== undefined ? { isFeatured: dto.isFeatured } : {}),
+        ...(dto.isSponsored !== undefined ? { isSponsored: dto.isSponsored } : {}),
+      },
+      select: { id: true, isFeatured: true, isSponsored: true },
+    });
+    await this.audit(admin.id, 'promote_business', 'business', id, null, dto);
+    this.businesses.revalidateBusiness(id);
+    return updated;
+  }
+
+  // --- Subscription plans (CRUD) ---
+  @Get('plans')
+  async listPlans(): Promise<unknown> {
+    return this.prisma.subscriptionPlan.findMany({
+      orderBy: { sortOrder: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        price: true,
+        interval: true,
+        features: true,
+        isActive: true,
+        sortOrder: true,
+        _count: { select: { subscriptions: true } },
+      },
+    });
+  }
+
+  @Post('plans')
+  async createPlan(
+    @Body(new ZodValidationPipe(planUpsertSchema)) dto: PlanUpsertDto,
+  ): Promise<unknown> {
+    return this.prisma.subscriptionPlan.create({
+      data: {
+        name: dto.name,
+        slug: dto.slug,
+        price: dto.price,
+        interval: dto.interval,
+        features: dto.features,
+        sortOrder: dto.sortOrder,
+        isActive: dto.isActive,
+      },
+    });
+  }
+
+  @Patch('plans/:id')
+  async updatePlan(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(planUpsertSchema.partial())) dto: Partial<PlanUpsertDto>,
+  ): Promise<unknown> {
+    return this.prisma.subscriptionPlan.update({ where: { id }, data: dto });
+  }
+
+  @Delete('plans/:id')
+  async removePlan(@Param('id') id: string): Promise<{ ok: true }> {
+    await this.prisma.subscriptionPlan.delete({ where: { id } });
+    return { ok: true };
+  }
+
+  @Get('subscriptions')
+  async listSubscriptions(): Promise<unknown> {
+    return this.prisma.businessSubscription.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      select: {
+        id: true,
+        status: true,
+        startedAt: true,
+        endsAt: true,
+        createdAt: true,
+        business: { select: { name: true, slug: true } },
+        plan: { select: { name: true, price: true } },
+      },
+    });
   }
 
   private async recomputeRating(businessId: string): Promise<void> {
