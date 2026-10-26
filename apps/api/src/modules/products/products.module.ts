@@ -38,6 +38,20 @@ class ProductsController {
     @Body(new ZodValidationPipe(createProductSchema)) dto: CreateProductDto,
   ): Promise<unknown> {
     await this.assertOwner(user, dto.businessId);
+    // Free tier is capped at 3 products; paid tiers are unlimited.
+    const business = await this.prisma.business.findUnique({
+      where: { id: dto.businessId },
+      select: { subscriptionTier: true },
+    });
+    const isFree = !business?.subscriptionTier || business.subscriptionTier === 'free';
+    if (isFree) {
+      const count = await this.prisma.product.count({
+        where: { businessId: dto.businessId, deletedAt: null },
+      });
+      if (count >= 3) {
+        throw new ForbiddenException('Free plan allows up to 3 products. Upgrade to add more.');
+      }
+    }
     const publicId = shortId(8);
     const product = await this.prisma.product.create({
       data: {

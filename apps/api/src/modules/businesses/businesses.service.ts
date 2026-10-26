@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -164,6 +165,19 @@ export class BusinessesService {
     await this.ownedOrThrow(ownerId, id);
     if (!isValidGstin(gstin)) {
       throw new BadRequestException('Invalid GSTIN (format or checksum failed)');
+    }
+    // One GSTIN per listing: block if another live business already claims it.
+    const dup = await this.prisma.business.findFirst({
+      where: {
+        gstin,
+        id: { not: id },
+        deletedAt: null,
+        gstinStatus: { in: ['pending', 'verified', 'manual'] },
+      },
+      select: { id: true },
+    });
+    if (dup) {
+      throw new ConflictException('This GSTIN is already linked to another listing.');
     }
     await this.prisma.business.update({
       where: { id },

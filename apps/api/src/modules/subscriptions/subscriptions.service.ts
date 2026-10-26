@@ -16,16 +16,26 @@ interface Entitlements {
   durationDays: number;
 }
 
-/** Maps a plan slug to what the business gets. */
-function entitlementsFor(slug: string): Entitlements {
-  switch (slug) {
-    case 'gold':
-      return { tier: 'gold', isFeatured: true, isSponsored: true, durationDays: 30 };
-    case 'silver':
-      return { tier: 'silver', isFeatured: false, isSponsored: false, durationDays: 30 };
-    default:
-      return { tier: 'free', isFeatured: false, isSponsored: false, durationDays: 0 };
+/**
+ * Maps a plan to what the business gets. Derived from price + slug keywords so
+ * ANY plan set works (badge/sponsored/gold/silver/...) without a code change —
+ * paid plans never silently fall back to free entitlements.
+ */
+function entitlementsFor(plan: { slug: string; price: unknown; interval?: string }): Entitlements {
+  const slug = plan.slug.toLowerCase();
+  const price = Number(plan.price);
+  if (!Number.isFinite(price) || price <= 0) {
+    return { tier: 'free', isFeatured: false, isSponsored: false, durationDays: 0 };
   }
+  const durationDays = plan.interval === 'yearly' ? 365 : 30;
+  const sponsored = /gold|sponsor|premium|pro/.test(slug);
+  const featured = sponsored || /silver|feature|badge|plus/.test(slug);
+  return {
+    tier: sponsored ? 'gold' : 'silver',
+    isFeatured: featured,
+    isSponsored: sponsored,
+    durationDays,
+  };
 }
 
 @Injectable()
@@ -76,7 +86,7 @@ export class SubscriptionsService {
     const ok = this.payments.verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
     if (!ok) throw new BadRequestException('Payment signature verification failed');
 
-    const ent = entitlementsFor(plan.slug);
+    const ent = entitlementsFor(plan);
     const now = new Date();
     const endsAt = new Date(now.getTime() + ent.durationDays * 24 * 60 * 60 * 1000);
 
