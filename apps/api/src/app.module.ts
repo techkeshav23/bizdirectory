@@ -23,6 +23,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
+import { SettingsModule } from './modules/settings/settings.module';
 import { RevalidateModule } from './modules/revalidate/revalidate.module';
 
 @Module({
@@ -66,6 +67,7 @@ import { RevalidateModule } from './modules/revalidate/revalidate.module';
     AdminModule,
     SubscriptionsModule,
     UploadsModule,
+    SettingsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

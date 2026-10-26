@@ -11,6 +11,7 @@ import {
   Megaphone,
   LayoutDashboard,
   Settings,
+  Globe,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -52,6 +53,7 @@ export const navSections: NavSection[] = [
       { name: 'Locations', href: '/admin/locations', icon: MapPin, role: 'admin' },
       { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare, role: 'admin' },
       { name: 'Users', href: '/admin/users', icon: Users, role: 'admin' },
+      { name: 'SEO', href: '/admin/seo', icon: Globe, role: 'admin' },
       { name: 'Audit Log', href: '/admin/audit', icon: ScrollText, role: 'admin' },
     ],
   },

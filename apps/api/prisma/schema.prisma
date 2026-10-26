@@ -417,3 +417,11 @@ model AuditLog {
   @@index([entityType, entityId])
   @@map("audit_logs")
 }
+
+model SiteSetting {
+  key       String   @id @db.VarChar(80)
+  value     String?
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("site_settings")
+}

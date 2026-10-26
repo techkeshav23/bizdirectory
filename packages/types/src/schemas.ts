@@ -175,6 +175,11 @@ export const promotionSchema = z.object({
 });
 export type PromotionDto = z.infer<typeof promotionSchema>;
 
+export const settingsUpdateSchema = z.object({
+  settings: z.record(z.string().max(80), z.string().max(4000).nullable()),
+});
+export type SettingsUpdateDto = z.infer<typeof settingsUpdateSchema>;
+
 // ---------- Subscriptions / Payments ----------
 export const checkoutSchema = z.object({
   businessId: z.string().uuid(),
