@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Post,
+  Query,
+  Req,
+  type RawBodyRequest,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import {
   checkoutSchema,
   verifyPaymentSchema,
@@ -48,5 +58,15 @@ export class SubscriptionsController {
       dto.razorpayPaymentId,
       dto.razorpaySignature,
     );
+  }
+
+  // Server-to-server activation — survives the browser closing after payment.
+  @Public()
+  @Post('webhook')
+  webhook(
+    @Req() req: RawBodyRequest<Request>,
+    @Headers('x-razorpay-signature') signature?: string,
+  ): Promise<{ received: true }> {
+    return this.subscriptions.handleWebhook(req.rawBody ?? Buffer.from(''), signature ?? '');
   }
 }

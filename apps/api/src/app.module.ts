@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { validateEnv } from './config/env';
 import { PrismaModule } from './prisma/prisma.module';
@@ -49,6 +50,7 @@ import { RevalidateModule } from './modules/revalidate/revalidate.module';
       },
     }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
+    ScheduleModule.forRoot(),
     JwtModule.register({ global: true }),
     PrismaModule,
     RedisModule,
