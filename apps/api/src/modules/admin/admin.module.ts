@@ -1,10 +1,23 @@
-import { Body, Controller, Get, Module, Param, Patch, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Module,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import {
   gstinOverrideSchema,
   moderateBusinessSchema,
+  updateUserRoleSchema,
   type BusinessStatus,
   type GstinOverrideDto,
   type ModerateBusinessDto,
+  type UpdateUserRoleDto,
+  type UserRole,
+  type UserStatus,
 } from '@app/types';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { CurrentUser, Roles, type AuthUser } from '../../common/decorators';
@@ -81,10 +94,13 @@ class AdminController {
   }
 
   @Get('reviews')
-  async pendingReviews(): Promise<unknown> {
+  async pendingReviews(@Query('status') status?: string): Promise<unknown> {
     return this.prisma.review.findMany({
-      where: { status: 'pending' },
-      include: { business: { select: { name: true } }, user: { select: { phone: true } } },
+      where: { status: (status as 'pending' | 'approved' | 'rejected') || 'pending' },
+      include: {
+        business: { select: { name: true, slug: true } },
+        user: { select: { phone: true, fullName: true } },
+      },
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
@@ -112,6 +128,64 @@ class AdminController {
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
+  }
+
+  @Get('users')
+  async listUsers(
+    @Query('role') role?: string,
+    @Query('status') status?: string,
+    @Query('q') q?: string,
+  ): Promise<unknown> {
+    return this.prisma.user.findMany({
+      where: {
+        deletedAt: null,
+        ...(role ? { role: role as UserRole } : {}),
+        ...(status ? { status: status as UserStatus } : {}),
+        ...(q
+          ? {
+              OR: [
+                { phone: { contains: q } },
+                { fullName: { contains: q, mode: 'insensitive' as const } },
+                { email: { contains: q, mode: 'insensitive' as const } },
+              ],
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        phone: true,
+        email: true,
+        fullName: true,
+        role: true,
+        status: true,
+        isPhoneVerified: true,
+        createdAt: true,
+        _count: { select: { businesses: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+  }
+
+  @Patch('users/:id')
+  async updateUser(
+    @CurrentUser() admin: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(updateUserRoleSchema)) dto: UpdateUserRoleDto,
+  ): Promise<unknown> {
+    if (id === admin.id && (dto.status === 'blocked' || (dto.role && dto.role !== 'admin'))) {
+      throw new BadRequestException('You cannot demote or block your own admin account.');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(dto.role ? { role: dto.role } : {}),
+        ...(dto.status ? { status: dto.status } : {}),
+      },
+      select: { id: true, role: true, status: true },
+    });
+    await this.audit(admin.id, 'update_user', 'user', id, null, dto);
+    return updated;
   }
 
   private async recomputeRating(businessId: string): Promise<void> {

@@ -5,6 +5,8 @@ import {
   ScrollText,
   FolderTree,
   MapPin,
+  Users,
+  MessageSquare,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -35,9 +37,11 @@ export const navSections: NavSection[] = [
   {
     label: 'Admin',
     items: [
-      { name: 'Moderation', href: '/admin', icon: ShieldCheck, role: 'admin', exact: true },
+      { name: 'Businesses', href: '/admin', icon: ShieldCheck, role: 'admin', exact: true },
       { name: 'Categories', href: '/admin/categories', icon: FolderTree, role: 'admin' },
       { name: 'Locations', href: '/admin/locations', icon: MapPin, role: 'admin' },
+      { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare, role: 'admin' },
+      { name: 'Users', href: '/admin/users', icon: Users, role: 'admin' },
       { name: 'Audit Log', href: '/admin/audit', icon: ScrollText, role: 'admin' },
     ],
   },
