@@ -73,18 +73,31 @@ async function main() {
   }
 
   console.log('Seeding locations...');
+  // NOTE: Location has @@unique([type, slug, parentId]) with a NULLABLE parentId.
+  // Prisma rejects null in a compound-unique `where`, so upsert fails for states
+  // (parentId = null). Use findFirst + create/update, which is null-safe.
   for (const state of STATES) {
-    const st = await prisma.location.upsert({
-      where: { type_slug_parentId: { type: 'state', slug: state.slug, parentId: null as any } },
-      update: { name: state.name },
-      create: { type: 'state', name: state.name, slug: state.slug },
+    let st = await prisma.location.findFirst({
+      where: { type: 'state', slug: state.slug, parentId: null },
     });
-    for (const city of state.cities) {
-      await prisma.location.upsert({
-        where: { type_slug_parentId: { type: 'city', slug: city.slug, parentId: st.id } },
-        update: { name: city.name },
-        create: { type: 'city', name: city.name, slug: city.slug, parentId: st.id },
+    if (st) {
+      await prisma.location.update({ where: { id: st.id }, data: { name: state.name } });
+    } else {
+      st = await prisma.location.create({
+        data: { type: 'state', name: state.name, slug: state.slug },
       });
+    }
+    for (const city of state.cities) {
+      const existingCity = await prisma.location.findFirst({
+        where: { type: 'city', slug: city.slug, parentId: st.id },
+      });
+      if (existingCity) {
+        await prisma.location.update({ where: { id: existingCity.id }, data: { name: city.name } });
+      } else {
+        await prisma.location.create({
+          data: { type: 'city', name: city.name, slug: city.slug, parentId: st.id },
+        });
+      }
     }
   }
 
