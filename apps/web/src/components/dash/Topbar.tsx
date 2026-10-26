@@ -5,14 +5,18 @@ import Link from 'next/link';
 import { Menu, Search } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { SidebarNavList } from './Sidebar';
+import { UserMenu } from './UserMenu';
 import { ThemeToggle } from './ThemeToggle';
 
-interface Props {
+interface TopbarUser {
+  name: string;
+  email: string | null;
+  phone: string;
   isAdmin: boolean;
   isOwner: boolean;
 }
 
-export function Topbar({ isAdmin, isOwner }: Props) {
+export function Topbar({ user }: { user: TopbarUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -27,17 +31,23 @@ export function Topbar({ isAdmin, isOwner }: Props) {
             <Menu className="size-5" />
           </button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-72 p-0">
+        <SheetContent side="left" className="flex w-72 flex-col p-0">
           <SheetTitle className="flex h-14 items-center border-b border-border px-4">
             <Link href="/" className="font-display text-lg font-semibold">
-              Biz<span className="italic text-primary">Directory</span>
+              Biz<span className="text-primary">Directory</span>
             </Link>
           </SheetTitle>
-          <SidebarNavList
-            isAdmin={isAdmin}
-            isOwner={isOwner}
-            onNavigate={() => setMobileOpen(false)}
-          />
+          <div className="flex-1 overflow-y-auto">
+            <SidebarNavList
+              isAdmin={user.isAdmin}
+              isOwner={user.isOwner}
+              onNavigate={() => setMobileOpen(false)}
+            />
+          </div>
+          {/* Account + theme + sign out — otherwise unreachable on mobile. */}
+          <div className="border-t border-border p-2">
+            <UserMenu name={user.name} email={user.email} phone={user.phone} />
+          </div>
         </SheetContent>
       </Sheet>
 

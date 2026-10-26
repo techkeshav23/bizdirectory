@@ -55,7 +55,12 @@ class ProductsController {
           : undefined,
       },
     });
-    this.revalidate.revalidate([tagProduct(product.id), tagBusiness(dto.businessId)]);
+    this.revalidate.revalidate([
+      'business',
+      'product',
+      tagProduct(product.id),
+      tagBusiness(dto.businessId),
+    ]);
     return product;
   }
 
@@ -108,7 +113,7 @@ class ProductsController {
         currency: dto.currency,
       },
     });
-    this.revalidate.revalidate([tagProduct(id), tagBusiness(product.businessId)]);
+    this.revalidate.revalidate(['business', 'product', tagProduct(id), tagBusiness(product.businessId)]);
     return updated;
   }
 
@@ -119,7 +124,7 @@ class ProductsController {
     if (!product) throw new NotFoundException('Product not found');
     await this.assertOwner(user, product.businessId);
     await this.prisma.product.update({ where: { id }, data: { deletedAt: new Date() } });
-    this.revalidate.revalidate([tagProduct(id), tagBusiness(product.businessId)]);
+    this.revalidate.revalidate(['business', 'product', tagProduct(id), tagBusiness(product.businessId)]);
     return { ok: true };
   }
 

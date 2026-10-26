@@ -14,6 +14,7 @@ export default function AdminSeoPage() {
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [loaded, setLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -23,7 +24,9 @@ export default function AdminSeoPage() {
         setMetaDescription(s['seo.metaDescription'] ?? '');
         setLoaded(true);
       })
-      .catch(() => setLoaded(true));
+      // Do NOT enable Save on load failure — the form is blank and saving would
+      // wipe the live meta tags. Surface the error and keep Save disabled.
+      .catch(() => setLoadFailed(true));
   }, []);
 
   async function save(e: React.FormEvent) {
@@ -51,6 +54,13 @@ export default function AdminSeoPage() {
         title="SEO controls"
         description="Edit the site title and meta description shown in Google and social shares."
       />
+
+      {loadFailed && (
+        <div className="mb-4 rounded-[var(--radius)] bg-destructive/10 px-4 py-3 text-sm text-destructive ring-1 ring-destructive/20">
+          Couldn&apos;t load the current SEO settings. Reload the page before editing — saving
+          now would overwrite the live meta tags.
+        </div>
+      )}
 
       <form
         onSubmit={save}
@@ -85,7 +95,7 @@ export default function AdminSeoPage() {
           </p>
         </div>
 
-        <Button type="submit" disabled={!loaded || saving}>
+        <Button type="submit" disabled={!loaded || loadFailed || saving}>
           {saving ? 'Saving…' : 'Save SEO settings'}
         </Button>
       </form>

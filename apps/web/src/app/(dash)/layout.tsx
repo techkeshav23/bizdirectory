@@ -29,7 +29,7 @@ export default async function DashLayout({ children }: { children: React.ReactNo
       </a>
       <Sidebar user={user} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Topbar isAdmin={user.isAdmin} isOwner={user.isOwner} />
+        <Topbar user={user} />
         <main id="dash-main" className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</div>
         </main>

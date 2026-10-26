@@ -190,12 +190,15 @@ export class BusinessesService {
   }
 
   private fireRevalidate(businessId: string): void {
-    this.revalidate.revalidate([tagBusiness(businessId)]);
+    // Public business/product pages subscribe to the broad 'business' tag; the
+    // id-scoped tag alone never matches the slug-tagged page, so edits would not
+    // reflect for ~24h. Bust the broad tag too.
+    this.revalidate.revalidate(['business', tagBusiness(businessId)]);
   }
 
   /** Used by admin on status change to refresh public pages. */
   revalidateBusiness(businessId: string, citySlug?: string, categorySlug?: string): void {
-    const tags = [tagBusiness(businessId)];
+    const tags = ['business', tagBusiness(businessId)];
     if (citySlug) tags.push(tagCity(citySlug));
     if (categorySlug) tags.push(tagCategory(categorySlug));
     this.revalidate.revalidate(tags);

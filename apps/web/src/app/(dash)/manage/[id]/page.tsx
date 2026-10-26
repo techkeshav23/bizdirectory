@@ -135,7 +135,11 @@ function ProfileEditor({ biz, onSaved }: { biz: BusinessDetail; onSaved: () => v
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Business name</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
           </div>
           <div className="space-y-1.5">
             <Label>WhatsApp number</Label>
@@ -160,8 +164,9 @@ function ProfileEditor({ biz, onSaved }: { biz: BusinessDetail; onSaved: () => v
           </div>
         </div>
         <Button
-          disabled={saving}
+          disabled={saving || !form.name.trim()}
           onClick={() => {
+            if (!form.name.trim()) return;
             setSaving(true);
             clientApi('PATCH', `/businesses/${biz.id}`, {
               name: form.name,
