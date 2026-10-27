@@ -65,8 +65,8 @@ export const createBusinessSchema = z.object({
   whatsappNumber: phoneSchema.optional(),
   email: z.string().email().optional(),
   website: z.string().url().optional(),
-  logoUrl: z.string().url().optional(),
-  coverUrl: z.string().url().optional(),
+  logoUrl: z.string().url().nullish(),
+  coverUrl: z.string().url().nullish(),
 });
 export type CreateBusinessDto = z.infer<typeof createBusinessSchema>;
 

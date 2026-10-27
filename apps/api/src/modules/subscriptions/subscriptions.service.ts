@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { createHmac } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { tagBusiness } from '@app/types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RevalidateService } from '../revalidate/revalidate.service';
@@ -95,6 +95,13 @@ export class SubscriptionsService {
     const ok = this.payments.verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
     if (!ok) throw new BadRequestException('Payment signature verification failed');
 
+    // Idempotency: a replayed /verify must not stack a second active subscription.
+    const existing = await this.prisma.businessSubscription.findFirst({
+      where: { businessId, planId: plan.id, status: 'active', endsAt: { gt: new Date() } },
+      select: { id: true },
+    });
+    if (existing) return { activated: true, tier: entitlementsFor(plan).tier };
+
     const tier = await this.applyPlan(businessId, plan);
     return { activated: true, tier };
   }
@@ -158,15 +165,24 @@ export class SubscriptionsService {
       return { received: true };
     }
     const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
-    if (expected !== signature) throw new UnauthorizedException('Invalid webhook signature');
+    const sig = Buffer.from(signature);
+    const exp = Buffer.from(expected);
+    if (sig.length !== exp.length || !timingSafeEqual(sig, exp)) {
+      throw new UnauthorizedException('Invalid webhook signature');
+    }
 
-    const event = JSON.parse(rawBody.toString('utf8')) as {
+    let event: {
       event?: string;
       payload?: {
         order?: { entity?: { receipt?: string } };
         payment?: { entity?: { notes?: { receipt?: string } } };
       };
     };
+    try {
+      event = JSON.parse(rawBody.toString('utf8'));
+    } catch {
+      return { received: true }; // signed but malformed — ack so Razorpay stops retrying
+    }
     if (event.event === 'order.paid' || event.event === 'payment.captured') {
       const receipt =
         event.payload?.order?.entity?.receipt ?? event.payload?.payment?.entity?.notes?.receipt;

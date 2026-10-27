@@ -41,7 +41,8 @@ export class PaymentsService {
     const keySecret = this.config.get('RAZORPAY_KEY_SECRET', { infer: true })!;
     const { data } = await axios.post(
       'https://api.razorpay.com/v1/orders',
-      { amount, currency: 'INR', receipt },
+      // notes.receipt lets the webhook resolve business+plan from payment.captured too.
+      { amount, currency: 'INR', receipt, notes: { receipt } },
       { auth: { username: keyId, password: keySecret } },
     );
     return { orderId: data.id, amount, currency: 'INR', keyId, mock: false };

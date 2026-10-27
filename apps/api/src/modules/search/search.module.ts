@@ -48,6 +48,7 @@ class SearchController {
       and.push({
         location: {
           is: {
+            type: 'city',
             OR: [{ slug: q.city }, { name: { equals: q.city, mode: 'insensitive' } }],
           },
         },

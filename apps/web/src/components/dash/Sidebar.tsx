@@ -102,7 +102,7 @@ export function Sidebar({ user }: { user: SidebarUser }) {
       <div className="flex h-14 items-center justify-between border-b border-border px-3">
         {!collapsed && (
           <Link href="/" className="font-display text-lg font-semibold tracking-tight text-foreground">
-            Biz<span className="italic text-primary">Directory</span>
+            Biz<span className="text-primary">Directory</span>
           </Link>
         )}
         <button

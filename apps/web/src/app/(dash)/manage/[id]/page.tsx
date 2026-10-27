@@ -199,8 +199,8 @@ function ProfileEditor({ biz, onSaved }: { biz: BusinessDetail; onSaved: () => v
               description: form.description || undefined,
               whatsappNumber: form.whatsappNumber || undefined,
               address: form.address || undefined,
-              logoUrl: form.logoUrl || undefined,
-              coverUrl: form.coverUrl || undefined,
+              logoUrl: form.logoUrl || null,
+              coverUrl: form.coverUrl || null,
             })
               .then(() => {
                 toast.success('Profile saved — public page is refreshing');
