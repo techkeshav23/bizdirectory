@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -86,6 +87,17 @@ class CategoriesController {
   @Roles('admin')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ ok: true }> {
+    const [businessCount, childCount] = await Promise.all([
+      this.prisma.business.count({ where: { primaryCategoryId: id } }),
+      this.prisma.category.count({ where: { parentId: id } }),
+    ]);
+    if (businessCount > 0 || childCount > 0) {
+      throw new ConflictException(
+        `Cannot delete category: ${businessCount} business(es) and ${childCount} child categor${
+          childCount === 1 ? 'y' : 'ies'
+        } reference it`,
+      );
+    }
     await this.prisma.category.delete({ where: { id } });
     await this.redis.del('cache:categories:all');
     return { ok: true };

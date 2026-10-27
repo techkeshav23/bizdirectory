@@ -1,17 +1,17 @@
 import {
   Bookmark,
   Store,
+  BarChart3,
   ShieldCheck,
-  ScrollText,
   FolderTree,
   MapPin,
   Users,
-  MessageSquare,
+  Star,
   CreditCard,
   Megaphone,
-  LayoutDashboard,
-  Settings,
   Globe,
+  ScrollText,
+  Settings,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -32,37 +32,33 @@ export interface NavSection {
 
 export const navSections: NavSection[] = [
   {
-    label: 'My Business',
+    label: 'Overview',
     items: [
-      { name: 'Overview', href: '/dashboard/business', icon: LayoutDashboard, role: 'owner' },
-      { name: 'My Listings', href: '/manage', icon: Store, role: 'owner', exact: true },
+      { name: 'Saved', href: '/dashboard', icon: Bookmark, role: 'all', exact: true },
+      { name: 'Analytics', href: '/dashboard/business', icon: BarChart3, role: 'owner' },
     ],
   },
   {
-    label: 'Account',
-    items: [
-      { name: 'Saved', href: '/dashboard', icon: Bookmark, role: 'all', exact: true },
-      { name: 'Settings', href: '/settings', icon: Settings, role: 'all' },
-    ],
+    label: 'My Business',
+    items: [{ name: 'My Listings', href: '/manage', icon: Store, role: 'owner', exact: true }],
   },
   {
     label: 'Admin',
     items: [
-      { name: 'Businesses', href: '/admin', icon: ShieldCheck, role: 'admin', exact: true },
+      { name: 'Moderation', href: '/admin', icon: ShieldCheck, role: 'admin', exact: true },
       { name: 'Categories', href: '/admin/categories', icon: FolderTree, role: 'admin' },
       { name: 'Locations', href: '/admin/locations', icon: MapPin, role: 'admin' },
-      { name: 'Reviews', href: '/admin/reviews', icon: MessageSquare, role: 'admin' },
       { name: 'Users', href: '/admin/users', icon: Users, role: 'admin' },
+      { name: 'Reviews', href: '/admin/reviews', icon: Star, role: 'admin' },
+      { name: 'Plans', href: '/admin/plans', icon: CreditCard, role: 'admin' },
+      { name: 'Promotions', href: '/admin/promotions', icon: Megaphone, role: 'admin' },
       { name: 'SEO', href: '/admin/seo', icon: Globe, role: 'admin' },
       { name: 'Audit Log', href: '/admin/audit', icon: ScrollText, role: 'admin' },
     ],
   },
   {
-    label: 'Monetization',
-    items: [
-      { name: 'Plans', href: '/admin/plans', icon: CreditCard, role: 'admin' },
-      { name: 'Promotions', href: '/admin/promotions', icon: Megaphone, role: 'admin' },
-    ],
+    label: 'Account',
+    items: [{ name: 'Settings', href: '/settings', icon: Settings, role: 'all' }],
   },
 ];
 

@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -84,6 +85,15 @@ class LocationsController {
   @Roles('admin')
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ ok: true }> {
+    const [childCount, businessCount] = await Promise.all([
+      this.prisma.location.count({ where: { parentId: id } }),
+      this.prisma.business.count({ where: { locationId: id } }),
+    ]);
+    if (childCount > 0 || businessCount > 0) {
+      throw new ConflictException(
+        `Cannot delete location: ${childCount} child location(s) and ${businessCount} business(es) reference it`,
+      );
+    }
     await this.prisma.location.delete({ where: { id } });
     await this.bust();
     return { ok: true };

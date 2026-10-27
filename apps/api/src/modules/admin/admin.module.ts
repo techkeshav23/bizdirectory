@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -118,6 +119,9 @@ class AdminController {
     @Param('id') id: string,
     @Query('status') status: 'approved' | 'rejected' = 'approved',
   ): Promise<unknown> {
+    if (status !== 'approved' && status !== 'rejected') {
+      throw new BadRequestException("status must be one of 'approved' or 'rejected'.");
+    }
     const review = await this.prisma.review.update({
       where: { id },
       data: { status },
@@ -260,6 +264,12 @@ class AdminController {
 
   @Delete('plans/:id')
   async removePlan(@Param('id') id: string): Promise<{ ok: true }> {
+    const dependents = await this.prisma.businessSubscription.count({ where: { planId: id } });
+    if (dependents > 0) {
+      throw new ConflictException(
+        `Cannot delete plan: it is referenced by ${dependents} subscription(s).`,
+      );
+    }
     await this.prisma.subscriptionPlan.delete({ where: { id } });
     return { ok: true };
   }
