@@ -13,7 +13,10 @@ const slugField = z
 export const phoneSchema = z
   .string()
   .trim()
-  .regex(/^(\+?91)?[6-9]\d{9}$/, 'Enter a valid 10-digit Indian mobile number');
+  .transform((s) => s.replace(/[\s()-]/g, ''))
+  .pipe(
+    z.string().regex(/^(\+?91)?[6-9]\d{9}$/, 'Enter a valid 10-digit Indian mobile number'),
+  );
 
 export const gstinSchema = z
   .string()
