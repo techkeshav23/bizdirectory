@@ -20,6 +20,19 @@ export default function RegisterPage() {
   const [step, setStep] = useState<Step>('signup');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Already signed in? Skip the signup step — go straight to listing details.
+  useEffect(() => {
+    clientApi('GET', '/auth/me')
+      .then(() => {
+        setIsLoggedIn(true);
+        setStep('details');
+      })
+      .catch(() => {})
+      .finally(() => setChecking(false));
+  }, []);
 
   // signup
   const [account, setAccount] = useState({ fullName: '', email: '', password: '' });
@@ -58,13 +71,19 @@ export default function RegisterPage() {
     }
   }
 
+  if (checking) {
+    return <div className="py-10 text-center text-sm text-muted-foreground">Loading…</div>;
+  }
+
+  const flow: Step[] = isLoggedIn ? ['details', 'gstin', 'done'] : STEPS;
+
   return (
     <div>
       <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
         List your business
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Step {STEPS.indexOf(step) + 1} of {STEPS.length}
+        Step {Math.max(1, flow.indexOf(step) + 1)} of {flow.length}
       </p>
       {error && (
         <div className="mt-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">

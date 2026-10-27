@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Bookmark, Compass } from 'lucide-react';
+import { Bookmark, Compass, Store } from 'lucide-react';
 import { clientApi } from '@/lib/client';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/card';
@@ -38,6 +38,21 @@ export default function CustomerDashboard() {
   return (
     <div className="animate-rise">
       <PageHeader icon={Bookmark} title="Saved businesses" description="Your bookmarked listings." />
+
+      <Card className="mb-6 flex flex-wrap items-center justify-between gap-4 p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Store className="size-5" />
+          </div>
+          <div>
+            <h2 className="font-medium text-foreground">List your business</h2>
+            <p className="text-sm text-muted-foreground">
+              Reach customers directly — free listing in minutes.
+            </p>
+          </div>
+        </div>
+        <Button href="/register">List your business</Button>
+      </Card>
 
       {error ? (
         <ErrorState description={error} onRetry={load} />

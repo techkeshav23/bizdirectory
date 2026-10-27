@@ -40,7 +40,7 @@ export const navSections: NavSection[] = [
   },
   {
     label: 'My Business',
-    items: [{ name: 'My Listings', href: '/manage', icon: Store, role: 'owner', exact: true }],
+    items: [{ name: 'My Listings', href: '/manage', icon: Store, role: 'all', exact: true }],
   },
   {
     label: 'Admin',

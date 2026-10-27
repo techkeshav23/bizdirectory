@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 
-// Server-side role gate: only business owners (or admins) may manage listings.
+// Any signed-in user can reach "My Business" — a customer with no listings sees
+// the empty state and can create their first one (which promotes them to owner).
 export default async function ManageLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session) redirect('/login?next=/manage');
-  if (!session.isOwner) redirect('/dashboard');
   return <>{children}</>;
 }
