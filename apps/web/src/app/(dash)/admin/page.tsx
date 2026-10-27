@@ -141,7 +141,7 @@ export default function AdminPage() {
               Approve
             </Button>
           )}
-          {b.status !== 'suspended' && (
+          {b.status === 'active' && (
             <Button
               size="sm"
               variant="outline"

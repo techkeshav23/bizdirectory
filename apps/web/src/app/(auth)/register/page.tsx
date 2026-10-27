@@ -29,6 +29,7 @@ export default function RegisterPage() {
   const [businessId, setBusinessId] = useState('');
   const [gstin, setGstin] = useState('');
   const [legalName, setLegalName] = useState('');
+  const [gstinFailed, setGstinFailed] = useState(false);
 
   useEffect(() => {
     if (step !== 'details') return;
@@ -198,14 +199,31 @@ export default function RegisterPage() {
               Verified: {legalName}
             </div>
           )}
+          {gstinFailed && !legalName && (
+            <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive ring-1 ring-destructive/20">
+              Verification failed — double-check the GSTIN, or skip and add it later.
+            </div>
+          )}
           <div className="flex gap-3">
             <Button
               className="flex-1"
               disabled={loading || gstin.length !== 15}
               onClick={() =>
                 void run(
-                  () => clientApi<{ legalName: string }>('POST', `/businesses/${businessId}/gstin`, { gstin }),
-                  (r) => setLegalName(r.legalName),
+                  () =>
+                    clientApi<{ legalName: string | null; gstinStatus: string }>(
+                      'POST',
+                      `/businesses/${businessId}/gstin`,
+                      { gstin },
+                    ),
+                  (r) => {
+                    if (r.legalName && r.gstinStatus === 'verified') {
+                      setLegalName(r.legalName);
+                      setGstinFailed(false);
+                    } else {
+                      setGstinFailed(true);
+                    }
+                  },
                 )
               }
             >
