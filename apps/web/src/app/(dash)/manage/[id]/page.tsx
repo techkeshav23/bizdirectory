@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader, ErrorState, DeleteConfirmDialog, CardSkeleton } from '@/components/shared';
 import { toast } from '@/components/ui/sonner';
 import { UpgradeDialog } from '@/components/billing/UpgradeDialog';
+import { ImageUpload } from '@/components/dash/ImageUpload';
 import { inr } from '@/lib/utils';
 
 interface ProductItem {
@@ -29,6 +30,8 @@ interface BusinessDetail {
   description: string | null;
   whatsappNumber: string | null;
   address: string | null;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
   status: string;
   subscriptionTier?: string | null;
   products: ProductItem[];
@@ -123,6 +126,8 @@ function ProfileEditor({ biz, onSaved }: { biz: BusinessDetail; onSaved: () => v
     description: biz.description ?? '',
     whatsappNumber: biz.whatsappNumber ?? '',
     address: biz.address ?? '',
+    logoUrl: biz.logoUrl ?? '',
+    coverUrl: biz.coverUrl ?? '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -132,6 +137,27 @@ function ProfileEditor({ biz, onSaved }: { biz: BusinessDetail; onSaved: () => v
         <CardTitle>Business profile</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label>Logo</Label>
+            <ImageUpload
+              value={form.logoUrl}
+              onChange={(url) => setForm((f) => ({ ...f, logoUrl: url }))}
+              kind="logo"
+              businessId={biz.id}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Cover image</Label>
+            <ImageUpload
+              value={form.coverUrl}
+              onChange={(url) => setForm((f) => ({ ...f, coverUrl: url }))}
+              kind="cover"
+              businessId={biz.id}
+              aspect="wide"
+            />
+          </div>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Business name</Label>
@@ -173,6 +199,8 @@ function ProfileEditor({ biz, onSaved }: { biz: BusinessDetail; onSaved: () => v
               description: form.description || undefined,
               whatsappNumber: form.whatsappNumber || undefined,
               address: form.address || undefined,
+              logoUrl: form.logoUrl || undefined,
+              coverUrl: form.coverUrl || undefined,
             })
               .then(() => {
                 toast.success('Profile saved — public page is refreshing');
@@ -278,11 +306,6 @@ function ProductManager({ biz, onChange }: { biz: BusinessDetail; onChange: () =
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
             <Input
-              placeholder="Image URL (optional)"
-              value={form.imageUrl}
-              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-            />
-            <Input
               placeholder="Price (₹)"
               value={form.price}
               onChange={(e) => setForm({ ...form, price: e.target.value.replace(/[^0-9.]/g, '') })}
@@ -291,6 +314,15 @@ function ProductManager({ biz, onChange }: { biz: BusinessDetail; onChange: () =
               placeholder="Unit (kg, piece…)"
               value={form.priceUnit}
               onChange={(e) => setForm({ ...form, priceUnit: e.target.value })}
+            />
+          </div>
+          <div className="mt-3 space-y-1.5">
+            <Label>Product image</Label>
+            <ImageUpload
+              value={form.imageUrl}
+              onChange={(url) => setForm({ ...form, imageUrl: url })}
+              kind="product"
+              businessId={biz.id}
             />
           </div>
           <Button className="mt-3" disabled={busy || !form.name} onClick={add}>
