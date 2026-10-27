@@ -2,20 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { clientApi } from '@/lib/client';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { CategoryDto, LocationDto } from '@/lib/types';
 
-type Step = 'phone' | 'otp' | 'details' | 'gstin' | 'done';
+type Step = 'signup' | 'details' | 'gstin' | 'done';
+const STEPS: Step[] = ['signup', 'details', 'gstin', 'done'];
+
+const selectClass =
+  'h-11 w-full rounded-[var(--radius)] border border-input bg-background px-3 text-sm outline-none focus:border-ring';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>('phone');
-  const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
+  const [step, setStep] = useState<Step>('signup');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // signup
+  const [account, setAccount] = useState({ fullName: '', email: '', password: '' });
+
+  // business
   const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [cities, setCities] = useState<LocationDto[]>([]);
   const [form, setForm] = useState({
@@ -51,65 +60,80 @@ export default function RegisterPage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">
+      <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
         List your business
       </h1>
-      <p className="mt-1 text-sm text-muted">
-        Step {['phone', 'otp', 'details', 'gstin', 'done'].indexOf(step) + 1} of 5
+      <p className="mt-1 text-sm text-muted-foreground">
+        Step {STEPS.indexOf(step) + 1} of {STEPS.length}
       </p>
       {error && (
-        <div className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mt-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </div>
       )}
 
-      {step === 'phone' && (
-        <form
-          className="mt-5 space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void run(
-              () => clientApi('POST', '/auth/otp/request', { phone, purpose: 'login' }),
-              () => setStep('otp'),
-            );
-          }}
-        >
-          <input
-            type="tel"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Your mobile number"
-            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
-          />
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            Send OTP
-          </Button>
-        </form>
-      )}
-
-      {step === 'otp' && (
-        <form
-          className="mt-5 space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void run(
-              () => clientApi('POST', '/auth/otp/verify', { phone, code }),
-              () => setStep('details'),
-            );
-          }}
-        >
-          <input
-            inputMode="numeric"
-            maxLength={6}
-            required
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-            placeholder="6-digit OTP"
-            className="h-11 w-full rounded-lg border border-input px-3 text-center tracking-widest outline-none focus:border-brand-500"
-          />
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            Verify
-          </Button>
-        </form>
+      {step === 'signup' && (
+        <>
+          <form
+            className="mt-5 space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void run(
+                () =>
+                  clientApi('POST', '/auth/register', {
+                    email: account.email,
+                    password: account.password,
+                    fullName: account.fullName || undefined,
+                  }),
+                () => setStep('details'),
+              );
+            }}
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="fullName">Your name</Label>
+              <Input
+                id="fullName"
+                value={account.fullName}
+                onChange={(e) => setAccount({ ...account, fullName: e.target.value })}
+                placeholder="Full name"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={account.email}
+                onChange={(e) => setAccount({ ...account, email: e.target.value })}
+                placeholder="you@company.com"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                autoComplete="new-password"
+                minLength={8}
+                value={account.password}
+                onChange={(e) => setAccount({ ...account, password: e.target.value })}
+                placeholder="At least 8 characters"
+              />
+            </div>
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? 'Creating account…' : 'Create account & continue'}
+            </Button>
+          </form>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/login" className="text-primary hover:underline">
+              Log in
+            </Link>
+          </p>
+        </>
       )}
 
       {step === 'details' && (
@@ -120,8 +144,11 @@ export default function RegisterPage() {
             void run(
               () =>
                 clientApi<{ id: string }>('POST', '/businesses', {
-                  ...form,
-                  contactPhone: form.contactPhone || phone,
+                  name: form.name,
+                  description: form.description || undefined,
+                  primaryCategoryId: form.primaryCategoryId,
+                  locationId: form.locationId,
+                  contactPhone: form.contactPhone,
                   whatsappNumber: form.whatsappNumber || undefined,
                 }),
               (r) => {
@@ -131,24 +158,23 @@ export default function RegisterPage() {
             );
           }}
         >
-          <input
+          <Input
             required
             placeholder="Business name"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           />
           <textarea
             placeholder="Short description"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="min-h-20 w-full rounded-lg border border-input px-3 py-2 outline-none focus:border-brand-500"
+            className="min-h-20 w-full rounded-[var(--radius)] border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring"
           />
           <select
             required
             value={form.primaryCategoryId}
             onChange={(e) => setForm({ ...form, primaryCategoryId: e.target.value })}
-            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
+            className={selectClass}
           >
             <option value="">Select category</option>
             {categories.filter((c) => !c.parentId).map((c) => (
@@ -161,7 +187,7 @@ export default function RegisterPage() {
             required
             value={form.locationId}
             onChange={(e) => setForm({ ...form, locationId: e.target.value })}
-            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
+            className={selectClass}
           >
             <option value="">Select city</option>
             {cities.map((c) => (
@@ -170,11 +196,16 @@ export default function RegisterPage() {
               </option>
             ))}
           </select>
-          <input
+          <Input
+            required
+            placeholder="Contact phone (shown to customers)"
+            value={form.contactPhone}
+            onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
+          />
+          <Input
             placeholder="WhatsApp number (optional)"
             value={form.whatsappNumber}
             onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
-            className="h-11 w-full rounded-lg border border-input px-3 outline-none focus:border-brand-500"
           />
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             Create &amp; continue
@@ -184,15 +215,16 @@ export default function RegisterPage() {
 
       {step === 'gstin' && (
         <div className="mt-5 space-y-4">
-          <p className="text-sm text-muted">
-            Add your GSTIN to get a “Verified” badge (optional — you can skip and add later).
+          <p className="text-sm text-muted-foreground">
+            Add your GSTIN to get a &ldquo;Verified&rdquo; badge (optional — you can skip and add
+            later).
           </p>
-          <input
+          <Input
             placeholder="15-digit GSTIN"
             value={gstin}
             maxLength={15}
             onChange={(e) => setGstin(e.target.value.toUpperCase())}
-            className="h-11 w-full rounded-lg border border-input px-3 uppercase outline-none focus:border-brand-500"
+            className="uppercase"
           />
           {legalName && (
             <div className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success ring-1 ring-success/20">
@@ -249,8 +281,8 @@ export default function RegisterPage() {
       {step === 'done' && (
         <div className="mt-6 text-center">
           <div className="text-4xl">🎉</div>
-          <h2 className="mt-2 text-lg font-semibold">Submitted for review</h2>
-          <p className="mt-1 text-sm text-muted">
+          <h2 className="mt-2 text-lg font-semibold text-foreground">Submitted for review</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             Our team will review your listing shortly. You can manage it from your dashboard.
           </p>
           <Button className="mt-5 w-full" onClick={() => router.push('/manage')}>

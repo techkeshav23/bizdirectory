@@ -45,6 +45,19 @@ export const adminLoginSchema = z.object({
 });
 export type AdminLoginDto = z.infer<typeof adminLoginSchema>;
 
+export const registerSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  fullName: z.string().trim().min(1).max(120).optional(),
+});
+export type RegisterDto = z.infer<typeof registerSchema>;
+
+export const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(1, 'Password is required'),
+});
+export type LoginDto = z.infer<typeof loginSchema>;
+
 // ---------- User ----------
 export const updateProfileSchema = z.object({
   fullName: z.string().trim().min(1).max(120).optional(),

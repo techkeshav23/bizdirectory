@@ -12,11 +12,15 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import {
   adminLoginSchema,
+  loginSchema,
   otpRequestSchema,
   otpVerifySchema,
+  registerSchema,
   type AdminLoginDto,
+  type LoginDto,
   type OtpRequestDto,
   type OtpVerifyDto,
+  type RegisterDto,
 } from '@app/types';
 import { ZodValidationPipe } from '../../common/zod-validation.pipe';
 import { CurrentUser, Public, type AuthUser } from '../../common/decorators';
@@ -87,6 +91,38 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ userId: string }> {
     const result = await this.auth.adminLogin(dto.email, dto.password, {
+      userAgent: req.headers['user-agent'],
+      ipHash: hashIp(req.ip),
+    });
+    setAuthCookies(res, result);
+    return { userId: result.userId };
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 900_000, limit: 20 } })
+  @Post('register')
+  async register(
+    @Body(new ZodValidationPipe(registerSchema)) dto: RegisterDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ userId: string }> {
+    const result = await this.auth.register(dto.email, dto.password, dto.fullName, {
+      userAgent: req.headers['user-agent'],
+      ipHash: hashIp(req.ip),
+    });
+    setAuthCookies(res, result);
+    return { userId: result.userId };
+  }
+
+  @Public()
+  @Throttle({ default: { ttl: 900_000, limit: 20 } })
+  @Post('login')
+  async login(
+    @Body(new ZodValidationPipe(loginSchema)) dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ userId: string }> {
+    const result = await this.auth.login(dto.email, dto.password, {
       userAgent: req.headers['user-agent'],
       ipHash: hashIp(req.ip),
     });

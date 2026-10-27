@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -111,6 +112,46 @@ export class AuthService {
     });
     const pair = await this.tokens.issuePair(cred.userId, cred.user.role, true, meta);
     return { ...pair, userId: cred.userId };
+  }
+
+  async register(
+    email: string,
+    password: string,
+    fullName: string | undefined,
+    meta: RequestMeta,
+  ): Promise<TokenPair & { userId: string }> {
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) throw new ConflictException('An account with this email already exists.');
+    const passwordHash = await argon2.hash(password);
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        fullName,
+        role: 'customer',
+        consentAt: new Date(),
+        lastLoginAt: new Date(),
+      },
+    });
+    const pair = await this.tokens.issuePair(user.id, user.role, true, meta);
+    return { ...pair, userId: user.id };
+  }
+
+  async login(
+    email: string,
+    password: string,
+    meta: RequestMeta,
+  ): Promise<TokenPair & { userId: string }> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || !user.passwordHash || !(await argon2.verify(user.passwordHash, password))) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+    if (user.status === 'blocked' || user.deletedAt) {
+      throw new UnauthorizedException('This account is blocked.');
+    }
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    const pair = await this.tokens.issuePair(user.id, user.role, true, meta);
+    return { ...pair, userId: user.id };
   }
 
   refresh(refreshToken: string, meta: RequestMeta): Promise<TokenPair> {
